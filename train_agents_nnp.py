@@ -52,13 +52,28 @@ ep_rewards, running_rewards = aac_agent.train()
 training_results.append((hyperparam_dict, ep_rewards, running_rewards))
 
 
-# #%% Train AAC-Agent (neural network policy - agent) ###
-# hyperparam_dict = {'name': 'AAC-Agent2', 'learning_rate':LR_POL, 'hidden_dim':HIDDEN_DIM_POL}
-# aac_agent = AAC_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_POL,
-#                       gamma=GAMMA, hidden_dim=HIDDEN_DIM_POL, dropout=DROPOUT, log_interval=LOG_INTERVAL)
-# ep_rewards, running_rewards = aac_agent.train()
-# training_results.append((hyperparam_dict, ep_rewards, running_rewards))
+#%% Train AAC-Agent (neural network policy - agent) ###
+hyperparam_dict = {'name': 'AAC-Agent2', 'learning_rate':LR_POL, 'hidden_dim':HIDDEN_DIM_POL}
+aac_agent = AAC_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_POL,
+                      gamma=GAMMA, hidden_dim=HIDDEN_DIM_POL, dropout=DROPOUT, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = aac_agent.train()
+training_results.append((hyperparam_dict, ep_rewards, running_rewards))
 
+#%% Train AAC-Agent (neural network policy - agent) ###
+hyperparam_dict = {'name': 'AAC-Agent2', 'learning_rate':LR_POL, 'hidden_dim':HIDDEN_DIM_POL}
+aac_agent = AAC_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_POL,
+                      gamma=GAMMA, hidden_dim=HIDDEN_DIM_POL, dropout=DROPOUT, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = aac_agent.train()
+training_results.append((hyperparam_dict, ep_rewards, running_rewards))
+
+#%% Train AAC-Agent (neural network policy - agent) ###
+hyperparam_dict = {'name': 'AAC-Agent2', 'learning_rate':LR_POL, 'hidden_dim':HIDDEN_DIM_POL}
+aac_agent = AAC_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_POL,
+                      gamma=GAMMA, hidden_dim=HIDDEN_DIM_POL, dropout=DROPOUT, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = aac_agent.train()
+training_results.append((hyperparam_dict, ep_rewards, running_rewards))
+
+# new comment
 
 #%% VISUALIZATION
 plt.rcParams.update({'font.size': 18})
