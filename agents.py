@@ -17,9 +17,10 @@ import copy
 from networks import QNetwork, PolicyNetwork
 
 LR_DECAY_RATE = 0.999
-MINI_BATCH_SIZE = 4 # for experience replay
-MEM_MAX_SIZE = 100000 # 100000 for experience replay
-C_TARGET_NET_UPDATE = 1 # n_episodes with constant target q-network
+MEM_MAX_SIZE = 10000 # memory size for experience replay
+C_TARGET_NET_UPDATE = 200 # steps with constant target q-network
+START_EPS_DECAY = 400 # episode
+REWARD_THRESHOLD = -50
 
 class Base_Agent:
     """
@@ -33,6 +34,7 @@ class Base_Agent:
         self.env = env
         self.state_dim = env.observation_space.shape[0]
         self.num_actions = env.action_space.n
+        self.reward_threshold = self.env.spec.reward_threshold
 
         self.num_episodes = num_episodes
         self.num_steps = num_steps
@@ -86,7 +88,7 @@ class Base_Agent:
         """
         Save NN of agent.
         """
-        self.q_network.save(save_dir=save_dir, file_name=file_name)
+        self.q_net.save(save_dir=save_dir, file_name=file_name)
         return
     
     
@@ -94,7 +96,7 @@ class Base_Agent:
         """
         Load NN of agent.
         """
-        self.q_network.load_state_dict(torch.load(state_file))
+        self.q_net.load_state_dict(torch.load(state_file))
         
         # self.q_network = QNetwork.load(save_dir=save_dir, file_name=file_name)
         return
@@ -126,7 +128,7 @@ class Base_Agent:
         # aved_q_network.eval()
         
         # Evaluation mode
-        self.q_network.eval()
+        self.q_net.eval()
         
         if vid_env != None:
             self.env = vid_env
@@ -153,7 +155,7 @@ class Base_Agent:
             # For each step of the episode
             while (not done):
                 
-                q = self.q_network(torch.autograd.Variable(torch.from_numpy(state).type(torch.FloatTensor)))
+                q = self.q_net(torch.autograd.Variable(torch.from_numpy(state).type(torch.FloatTensor)))
                                 
                 # Choose greedy action based on q
                 _, action = torch.max(q, -1)
@@ -243,7 +245,79 @@ class Base_Agent:
             ep_rewards.append(ep_reward)
             
         return ep_rewards
+    
+    
+    def random_policy(self):
+        """
+        Evaluates the agent (its trained policy)
+        """
+        
+        # Array to store cumulative rewards per episode
+        ep_rewards = np.zeros((self.num_episodes, 1))
+        
+        # To track the reward across consecutive episodes (smoothed)
+        running_reward = self.running_reward_start
+        
+        # Lists to store the episodic and running rewards for plotting
+        ep_rewards = list()
+        running_rewards = list()
+        
+        # Track training
+        print('Training...')
+        
+        # For each episode
+        for i_episode in range(1,self.num_episodes+1):
+            # Cumulative reward
+            ep_reward = 0
+            ep_loss = 0
+                
+            # Initialize the environment and get the first state
+            state = self.env.reset()
+            
+            # Set the done variable to False
+            done = False
 
+            # Variable for tracking the time
+            t = 0
+                    
+            # For each step of the episode
+            while (not done):                               
+                action = self.random_action()
+                    
+                # Perform the action and observe the next_state and reward
+                next_state, reward, done, _ = self.env.step(action)
+
+                ep_reward += reward
+                
+                # Update the state
+                state = next_state
+                
+                # Increment the timestep
+                t += 1
+                
+                # Exit if the max number of steps has been exceeded
+                if t>=self.num_steps:
+                    done = True
+            
+            # Update the running reward
+            running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
+            
+            # Store the rewards for plotting
+            ep_rewards.append(ep_reward)
+            running_rewards.append(running_reward)
+            
+            if i_episode % self.log_interval == 0:
+                print('Episode {}\tLast reward: {:.2f}\tAverage reward: {:.2f}'.format(
+                      i_episode, ep_reward, running_reward))
+            # Stopping criteria
+            if running_reward > self.env.spec.reward_threshold:
+                print('Running reward is now {} and the last episode ran for {} steps!'.format(running_reward, t))
+                break
+            if i_episode >= self.num_episodes:
+                print('Max episodes exceeded, quitting.')
+                break
+
+        return ep_rewards, running_rewards  
 
 class Q_Agent(Base_Agent):
     """
@@ -268,6 +342,8 @@ class Q_Agent(Base_Agent):
         self.lr_decayRate = LR_DECAY_RATE
         self.lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.optimizer, gamma=self.lr_decayRate)
         
+        self.act_sel = 'softmax'
+       
        
     def train(self):
         """
@@ -312,7 +388,10 @@ class Q_Agent(Base_Agent):
                 # Use the state as input to compute the q-values (for all actions in 1 forward pass)
                 q = self.q_network(torch.autograd.Variable(torch.from_numpy(state).type(torch.FloatTensor)))
                                 
-                action = self.eps_greedy_action(q,i_episode)
+                if self.act_sel == 'eps_decay':
+                    action = self.eps_greedy_action(q)
+                else:
+                    action = self.softmax_action(q)
                     
                 # Perform the action and observe the next_state and reward
                 next_state, reward, done, _ = self.env.step(action)
@@ -361,7 +440,7 @@ class Q_Agent(Base_Agent):
                 print('Episode {}\tLast reward: {:.2f}\tAverage reward: {:.2f}'.format(
                       i_episode, ep_reward, running_reward))
             # Stopping criteria
-            if running_reward > self.env.spec.reward_threshold:
+            if running_reward > self.reward_threshold:
                 print('Running reward is now {} and the last episode ran for {} steps!'.format(running_reward, t))
                 break
             if i_episode >= self.num_episodes:
@@ -393,6 +472,9 @@ class SARSA_Agent(Base_Agent):
         # Learning rate schedule
         self.lr_decayRate = LR_DECAY_RATE
         self.lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.optimizer, gamma=self.lr_decayRate)
+        
+        self.act_sel = 'softmax'
+        
         
     def train(self):
         """
@@ -433,8 +515,10 @@ class SARSA_Agent(Base_Agent):
             # Use the state as input to compute the q-values (for all actions in 1 forward pass)
             q = self.q_network(torch.autograd.Variable(torch.from_numpy(state).type(torch.FloatTensor)))
 
-            action = self.eps_greedy_action(q,i_episode)
-            # action = self.softmax_action(q)
+            if self.act_sel == 'eps_decay':
+                action = self.eps_greedy_action(q)
+            else:
+                action = self.softmax_action(q)
             
             # For each step of the episode
             while (not done):
@@ -447,9 +531,11 @@ class SARSA_Agent(Base_Agent):
                 #### Perform next action
                 # Use the state as input to compute the q-values (for all actions in 1 forward pass)
                 qprime = self.q_network(torch.autograd.Variable(torch.from_numpy(next_state).type(torch.FloatTensor)))
-
-                aprime = self.eps_greedy_action(qprime,i_episode)
-                # aprime = self.softmax_action(qprime)
+                
+                if self.act_sel == 'eps_decay':
+                    aprime = self.eps_greedy_action(qprime)
+                else:
+                    aprime = self.softmax_action(qprime)
                 
                 # Find q for next state and action
                 with torch.no_grad():
@@ -499,7 +585,7 @@ class SARSA_Agent(Base_Agent):
                 print('Episode {}\tLast reward: {:.2f}\tAverage reward: {:.2f}'.format(
                       i_episode, ep_reward, running_reward))
             # Stopping criteria
-            if running_reward > self.env.spec.reward_threshold:
+            if running_reward > self.reward_threshold:
                 print('Running reward is now {} and the last episode ran for {} steps!'.format(running_reward, t))
                 break
             if i_episode >= self.num_episodes:
@@ -515,7 +601,7 @@ class Q_DQN_Agent(Base_Agent):
     A DQN Q-Learning agent.
     """
 
-    def __init__(self, env, num_episodes, num_steps, learning_rate, gamma, epsilon=0.3, hidden_dim=100, log_interval=100):
+    def __init__(self, env, num_episodes, num_steps, learning_rate, gamma, epsilon=0.3, hidden_dim=100, const_target=True, act_sel = 'softmax', batch_size=8, log_interval=100):
         """
         Constructor
         """
@@ -523,19 +609,27 @@ class Q_DQN_Agent(Base_Agent):
         
         self.epsilon = epsilon
         
-        self.q_network = QNetwork(env=self.env, hidden_dim=hidden_dim)
+        # Networks
+        self.q_net = QNetwork(env=self.env, hidden_dim=hidden_dim)
+        self.target_q_net = QNetwork(env=self.env, hidden_dim=hidden_dim)
         
-        self.optimizer = optim.Adam(self.q_network.parameters(), lr=self.learning_rate)
+        # Optimizer
+        self.optimizer = optim.Adam(self.q_net.parameters(), lr=self.learning_rate)
         # self.optimizer = optim.SGD(self.q_network.parameters(), lr=self.learning_rate)
-        self.criteria = nn.MSELoss()
-        
-        self.minibatch_size=MINI_BATCH_SIZE # for experience replay
-        self.mem_max_size = MEM_MAX_SIZE # 100000
-        self.C = C_TARGET_NET_UPDATE # n_episodes with constant target q-network
-        
         # Learning rate schedule
         self.lr_decayRate = LR_DECAY_RATE
         self.lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.optimizer, gamma=self.lr_decayRate)
+        
+        # Loss function
+        self.criteria = nn.MSELoss()
+        
+        # DQN
+        self.minibatch_size=batch_size
+        self.mem_max_size = MEM_MAX_SIZE
+        self.C = C_TARGET_NET_UPDATE
+        
+        self.const_target = const_target        
+        self.act_sel = act_sel
         
         
     def replay(self, replay_memory):
@@ -551,14 +645,14 @@ class Q_DQN_Agent(Base_Agent):
         
         # Find q(s,a) for all possible actions a. Store in list
         s_l = Variable(torch.from_numpy(s_l).type(torch.FloatTensor))
-        q = self.q_network(s_l)
+        q = self.q_net(s_l)
         q_target = q.clone()
         
         # Find q(s', a') for all possible actions a'. Store in list
         # We'll use the maximum of these values for q-update
         sprime_l = Variable(torch.from_numpy(sprime_l).type(torch.FloatTensor))
         with torch.no_grad():
-            qvals_sprime_l = self.target_q_network(sprime_l)
+            qvals_sprime_l = self.target_q_net(sprime_l)
         
         # q_target
         # For the action we took, use the q-update value  
@@ -594,7 +688,7 @@ class Q_DQN_Agent(Base_Agent):
         running_rewards = list()
         
         replay_memory = [] # replay memory holds s, a, r, s'
-        self.target_q_network = copy.deepcopy(self.q_network)
+        step = 0
         
         # Track training
         print('Training...')
@@ -614,13 +708,20 @@ class Q_DQN_Agent(Base_Agent):
             # Variable for tracking the time
             t = 0
             
+            # Decrease epsilon
+            if self.act_sel=='eps_decay' and i_episode>START_EPS_DECAY:
+                self.epsilon = 0.995*self.epsilon
+                
             # For each step of the episode
             while (not done):
                 
                 # Use the state as input to compute the q-values (for all actions in 1 forward pass)
-                q = self.q_network(torch.autograd.Variable(torch.from_numpy(state).type(torch.FloatTensor)))
-                                
-                action = self.eps_greedy_action(q,i_episode)
+                q = self.q_net(torch.autograd.Variable(torch.from_numpy(state).type(torch.FloatTensor)))
+                
+                if self.act_sel == 'eps_decay':
+                    action = self.eps_greedy_action(q)
+                else:
+                    action = self.softmax_action(q)
                     
                 # Perform the action and observe the next_state and reward
                 sprime, reward, done, _ = self.env.step(action)
@@ -634,7 +735,7 @@ class Q_DQN_Agent(Base_Agent):
                 loss = self.replay(replay_memory)
                 
                 # Update policy
-                self.q_network.zero_grad()
+                self.q_net.zero_grad()
                 loss.backward()
                 self.optimizer.step()
                 
@@ -643,22 +744,19 @@ class Q_DQN_Agent(Base_Agent):
                 ep_reward += reward
                 
                 # Update the state
-                state = sprime
-                
-                # Decrease epsilon until we hit a target threshold 
-                # if self.epsilon > 0.01:     
-                #     self.epsilon -= 0.001
+                state = sprime          
                 
                 # Increment the timestep
                 t += 1
-                
-                # Change 
-                if (t % self.C == 0):
-                    self.target_q_network = copy.deepcopy(self.q_network)
+                step += 1
                 
                 # Exit if the max number of steps has been exceeded
                 if t>=self.num_steps:
                     done = True
+                
+                # Exchange target network
+                if self.const_target and (step % self.C == 0):
+                    self.target_q_net.load_state_dict(self.q_net.state_dict())
             
             # Update the running reward
             running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
@@ -668,10 +766,10 @@ class Q_DQN_Agent(Base_Agent):
             running_rewards.append(running_reward)
             
             if i_episode % self.log_interval == 0:
-                print('Episode {}\Epsilon: {:.2f}\tAverage reward: {:.2f}'.format(
+                print('Episode {}\tEpsilon: {:.2f}\tAverage reward: {:.2f}'.format(
                       i_episode, self.epsilon, running_reward))
             # Stopping criteria
-            if running_reward > self.env.spec.reward_threshold:
+            if running_reward > self.reward_threshold:
                 print('Running reward is now {} and the last episode ran for {} steps!'.format(running_reward, t))
                 break
             if i_episode >= self.num_episodes:
@@ -687,7 +785,7 @@ class SARSA_DQN_Agent(Base_Agent):
     A DQN SARSA-Learning agent.
     """
 
-    def __init__(self, env, num_episodes, num_steps, learning_rate, gamma, epsilon=0.1, hidden_dim=100, const_target=True, act_sel = 'eps_decay', log_interval=100):
+    def __init__(self, env, num_episodes, num_steps, learning_rate, gamma, epsilon=0.1, hidden_dim=100, const_target=True, act_sel = 'softmax', batch_size = 8, log_interval=100):
         """
         Constructor
         """
@@ -695,23 +793,25 @@ class SARSA_DQN_Agent(Base_Agent):
         
         self.epsilon = epsilon
         
-        self.q_network = QNetwork(env=self.env, hidden_dim=hidden_dim)
+        self.q_net = QNetwork(env=self.env, hidden_dim=hidden_dim)
+        self.target_q_net = QNetwork(env=self.env, hidden_dim=hidden_dim)
         
-        self.optimizer = optim.Adam(self.q_network.parameters(), lr=self.learning_rate)
-        # self.optimizer = optim.SGD(self.q_network.parameters(), lr=self.learning_rate)
-        self.criteria = nn.MSELoss()
-        
-        self.minibatch_size=MINI_BATCH_SIZE # for experience replay
-        self.mem_max_size = MEM_MAX_SIZE # 100000
-        
-        self.const_target = const_target
-        self.C = C_TARGET_NET_UPDATE # n_episodes with constant target q-network
+        self.optimizer = optim.Adam(self.q_net.parameters(), lr=self.learning_rate)
         
         # Learning rate schedule
         # self.lr_decayRate = LR_DECAY_RATE
         # self.lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.optimizer, gamma=self.lr_decayRate)
         
-        self.act_sel = act_sel
+        # Loss function
+        self.criteria = nn.MSELoss()
+        
+        # DQN
+        self.minibatch_size=batch_size # for experience replay
+        self.mem_max_size = MEM_MAX_SIZE # 100000
+        self.C = C_TARGET_NET_UPDATE # steps with constant target q-network
+        
+        self.const_target = const_target        
+        self.act_sel = act_sel # softmax or eps_decay
         
         
     def replay(self, replay_memory):
@@ -728,7 +828,7 @@ class SARSA_DQN_Agent(Base_Agent):
         
         # Find q(s,a) for all possible actions a. Store in list
         s_l = Variable(torch.from_numpy(s_l).type(torch.FloatTensor))
-        q = self.q_network.forward(s_l)
+        q = self.q_net.forward(s_l)
         q_target = q.clone()
         
         # Find q(s', a') for all possible actions a'. Store in list
@@ -736,9 +836,9 @@ class SARSA_DQN_Agent(Base_Agent):
         with torch.no_grad(): 
             sprime_l = Variable(torch.from_numpy(sprime_l).type(torch.FloatTensor))
             if self.const_target:
-                qvals_sprime_l = self.target_q_network(sprime_l)
+                qvals_sprime_l = self.target_q_net(sprime_l)
             else:
-                qvals_sprime_l = self.q_network(sprime_l)
+                qvals_sprime_l = self.q_net(sprime_l)
              
         # q-update target
         # For the action we took, use the q-update value  
@@ -773,9 +873,7 @@ class SARSA_DQN_Agent(Base_Agent):
         running_reward = self.running_reward_start
         
         replay_memory = [] # replay memory holds s, a, r, s'
-        
-        if self.const_target:
-            self.target_q_network = copy.deepcopy(self.q_network)
+        step = 0
         
         # Track training
         print('Training...')
@@ -797,14 +895,16 @@ class SARSA_DQN_Agent(Base_Agent):
             t = 0
             
             # Use the state as input to compute the q-values (for all actions in 1 forward pass)
-            q = self.q_network(torch.autograd.Variable(torch.from_numpy(state).type(torch.FloatTensor)))
+            q = self.q_net(torch.autograd.Variable(torch.from_numpy(state).type(torch.FloatTensor)))
             
             # Decrease epsilon
-            if self.act_sel=='eps_decay' and i_episode>150:
+            if self.act_sel=='eps_decay' and i_episode>START_EPS_DECAY:
                 self.epsilon = 0.995*self.epsilon
             
-            action = self.eps_greedy_action(q)
-            #action = self.softmax_action(q)
+            if self.act_sel=='eps_decay':    
+                action = self.eps_greedy_action(q)
+            else:
+                action = self.softmax_action(q)
             
             # For each step of the episode
             while (not done):
@@ -814,10 +914,12 @@ class SARSA_DQN_Agent(Base_Agent):
                 # Next action
                 # Use the state as input to compute the q-values (for all actions in 1 forward pass)
                 with torch.no_grad():           
-                    qprime = self.q_network(torch.autograd.Variable(torch.from_numpy(sprime).type(torch.FloatTensor)))
-
-                aprime = self.eps_greedy_action(qprime)
-                #aprime = self.softmax_action(qprime)
+                    qprime = self.q_net(torch.autograd.Variable(torch.from_numpy(sprime).type(torch.FloatTensor)))
+                
+                if self.act_sel=='eps_decay':    
+                    aprime = self.eps_greedy_action(qprime)
+                else:
+                    aprime = self.softmax_action(qprime)
                 
                 # add to memory, respecting memory buffer limit 
                 if len(replay_memory) > self.mem_max_size:
@@ -828,7 +930,7 @@ class SARSA_DQN_Agent(Base_Agent):
                 loss = self.replay(replay_memory)
                 
                 # Update policy
-                self.q_network.zero_grad()
+                self.q_net.zero_grad()
                 loss.backward()
                 self.optimizer.step()
                 
@@ -836,24 +938,22 @@ class SARSA_DQN_Agent(Base_Agent):
                 ep_loss += loss.item()
                 ep_reward += reward
                 
-                # Update the state
+                # Update the state and action
                 state = sprime
-                
-                #### update action 
                 action = aprime
-                # q = next_q.clone()
                 
                 # Increment the timestep
                 t += 1
+                step += 1
                     
                 # Exit if the max number of steps has been exceeded
                 if t>=self.num_steps:
                     done = True
             
-            # Change 
-            if self.const_target and (i_episode % self.C == 0):
-                self.target_q_network = copy.deepcopy(self.q_network)
+                if self.const_target and (step % self.C == 0):
+                    self.target_q_net.load_state_dict(self.q_net.state_dict())
                     
+            
             # Update the running reward /return!!
             running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
             
@@ -866,7 +966,7 @@ class SARSA_DQN_Agent(Base_Agent):
                 print('Episode {}\tEpsilon: {:.2f}\tAverage reward: {:.2f}'.format(
                       i_episode, self.epsilon, running_reward))
             # Stopping criteria
-            if running_reward > self.env.spec.reward_threshold:
+            if running_reward > self.reward_threshold:
                 print('Running reward is now {} and the last episode ran for {} steps!'.format(running_reward, t))
                 break
             if i_episode >= self.num_episodes:

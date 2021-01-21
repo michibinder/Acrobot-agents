@@ -200,7 +200,7 @@ class MC_PolGrad_Agent(Base_Agent):
                 print('Episode {}\tLast reward: {:.2f}\tAverage reward: {:.2f}'.format(
                       i_episode, ep_reward, running_reward))
             # Stopping criteria
-            if running_reward > self.env.spec.reward_threshold:
+            if running_reward > self.reward_threshold:
                 print('Running reward is now {} and the last episode ran for {} steps!'.format(running_reward, t))
                 break
             if i_episode >= self.num_episodes:
@@ -235,7 +235,6 @@ class AAC_Agent(Base_Agent):
         
         ### Networks
         self.actor = PolicyNetwork(self.env, hidden_dim=hidden_dim, dropout=dropout)
-        # self.critic = CriticNetwork(env, hidden_dim=hidden_dim, dropout=dropout)
         self.critic = CriticNetwork(env, hidden_dim=hidden_dim, dropout=dropout)
         
         self.policy = ActorCriticNetworks(self.actor, self.critic)
@@ -311,21 +310,27 @@ class AAC_Agent(Base_Agent):
         # deep learning and it improves performance, as discussed in 
         # http://karpathy.github.io/2016/05/31/rl/
         returns = (returns - returns.mean()) / (returns.std() + eps)
-    
-        # Here, we deviate slightly from the standard REINFORCE algorithm
-        # `-log_prob * G` instead of `log_prob * G` for gradient ASCENT
-        for log_prob, G in zip(self.policy.actor.saved_log_probs, returns):
-            policy_loss.append(-log_prob * G)
-    
+        
+        values = torch.cat(self.values).squeeze(-1)
+        advantages = returns - values
+        advantages = advantages.detach()
+        
+        # `-log_prob for gradient ASCENT
+        # for log_prob, delta in zip(self.policy.actor.saved_log_probs, advantages):
+        #     policy_loss.append(-log_prob * delta)
+        # policy_loss = torch.cat(policy_loss).mean()
+        
         # Reset the gradients of the parameters
         self.optimizer.zero_grad()
         
-        # Compute the cumulative loss
-        policy_loss = torch.cat(policy_loss).mean()
+        # Actor loss
+        log_probs = torch.cat(self.policy.actor.saved_log_probs)
+        policy_loss = -(log_probs * advantages).mean()
         
-        # Compute loss of value function
-        values = torch.cat(self.values).squeeze(-1)
+        # Critic loss
         value_loss = F.smooth_l1_loss(returns, values).sum()
+        # value_loss = (returns - values).pow(2).mean()
+        
         
         # Backpropagate the loss through the network
         policy_loss.backward()
@@ -423,7 +428,187 @@ class AAC_Agent(Base_Agent):
                 print('Episode {}\tLast reward: {:.2f}\tAverage reward: {:.2f}'.format(
                       i_episode, ep_reward, running_reward))
             # Stopping criteria
-            if running_reward > self.env.spec.reward_threshold:
+            if running_reward > self.reward_threshold:
+                print('Running reward is now {} and the last episode ran for {} steps!'.format(running_reward, t))
+                break
+            if i_episode >= self.num_episodes:
+                print('Max episodes exceeded, quitting.')
+                break
+        
+        # Save the trained policy network
+        if save:
+            self.policy.save()
+    
+        return ep_rewards, running_rewards
+    
+    @staticmethod
+    def init_weights(m):
+        if type(m) == nn.Linear:
+            torch.nn.init.xavier_normal_(m.weight)
+            m.bias.data.fill_(0)
+            
+    
+class AAC_TD_Agent(Base_Agent):
+    """
+    A Q actor-critic policy (NN) policy agent.
+    """
+
+    def __init__(self, env, num_episodes, num_steps, learning_rate, gamma, hidden_dim=100, dropout=0.6, log_interval=100):
+        """
+        Constructor
+        """
+        super().__init__(env, num_episodes, num_steps, learning_rate, gamma, log_interval=log_interval)
+        
+        ### Networks
+        self.actor = PolicyNetwork(self.env, hidden_dim=hidden_dim, dropout=dropout)
+        # self.critic = CriticNetwork(env, hidden_dim=hidden_dim, dropout=dropout)
+        self.critic = CriticNetwork(env, hidden_dim=hidden_dim, dropout=dropout)
+        
+        self.policy = ActorCriticNetworks(self.actor, self.critic)
+        self.policy.apply(AAC_Agent.init_weights)
+        
+        ### Optimizer
+        self.optimizer = optim.Adam(self.policy.parameters(), lr=self.learning_rate)
+        # self.optimizer = optim.Adam(self.actor.parameters(), lr=self.learning_rate)
+        
+        # all_params = chain(self.actor.parameters(), self.critic.parameters())
+        # self.optimizer = optim.Adam(all_params, lr=self.learning_rate)
+        
+        ### Learning rate decay
+        self.lr_decayRate = 0.999
+        self.lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.optimizer, gamma=self.lr_decayRate)
+    
+    
+    def update_policy(self):
+        """
+        Performs the parameter updates of the policy network after an episode is completed.
+        
+        Args:
+            policy (NeuralNetworkPolicy): The policy neural network.
+            optimizer (child of torch.optim.Optimizer): Optimizer algorithm for gradient ascent.
+            gamma (float): Discount factor in the range [0.0,1.0].
+        """
+        
+        sprime = torch.from_numpy(self.sprime).float().unsqueeze(0)
+        _, sprime_value = self.policy(sprime)
+        
+        # Calculate target based on reward and value of next step
+        if self.done:
+            target = self.reward +self.gamma*sprime_value - self.gamma*sprime_value
+        else:
+            target = self.reward +self.gamma*sprime_value
+        
+        # Advantage function delta
+        # value = torch.cat(self.value).squeeze(-1)
+        # value = torch.tensor(self.values)
+        value = self.value
+        advantage = target - value
+        advantage = advantage.detach()
+        
+        # Actor loss
+        log_prob = self.policy.actor.saved_log_probs[0][0]
+        policy_loss = -self.l * advantage * log_prob
+        
+        # Critic loss
+        value_loss = F.smooth_l1_loss(target, value)
+        
+        # Reset the gradients of the parameters
+        self.optimizer.zero_grad()
+        
+        # Backpropagate the loss through the network
+        policy_loss.backward()
+        value_loss.backward()
+        
+        # Perform a parameter update step
+        self.optimizer.step()
+    
+        # Reset the saved rewards and log probabilities
+        del self.policy.actor.saved_log_probs[:]
+    
+    
+    def train(self, save=False):
+        """
+        Implementation of the main body of the REINFORCE algorithm.
+        
+        Args:
+            policy (NeuralNetworkPolicy): The policy neural network.
+            optimizer (child of torch.optim.Optimizer): Optimizer algorithm for gradient ascent.
+            gamma (float): Discount factor in the range [0.0,1.0]. Defaults to 0.9.
+            log_interval (int): Prints the progress after this many episodes. Defaults to 100.
+            max_episodes (int): Maximum number of episodes to train for. Defaults to 1000.
+            save (bool): Whether to save the trained network. Defaults to False.
+            
+        Returns:
+            ep_rewards (list): List of actual cumulative rewards in each episode. 
+            running_rewards (numpy array): List of smoothed cumulative rewards in each episode. 
+        """
+        
+        # state_size = self.env.observation_space.shape[0]
+    
+        # Set the training mode
+        self.actor.train()
+        
+        # To track the reward across consecutive episodes (smoothed)
+        running_reward = self.running_reward_start
+    
+        # Lists to store the episodic and running rewards for plotting
+        ep_rewards = list()
+        running_rewards = list()
+    
+        # Track training
+        print('Training...')
+        # Start executing an episode
+        for i_episode in range(1, self.num_episodes+1):
+            # Reset the environment
+            state = self.env.reset()
+            t = 0
+            
+            # Initialize `ep_reward` (the total reward for this episode)
+            ep_reward = 0
+            
+            self.l=1
+            
+            # 3. For each step of the episode
+            while (True):
+                # Convert the state from a numpy array to a torch tensor
+                state = torch.from_numpy(state).float().unsqueeze(0)
+                
+                # Select an action using the policy network
+                action, self.value = self.policy(state)
+                # action = self.actor.select_action(state)
+                # value = self.critic(state)
+                
+                # Perform the action and note the next state and reward and if the episode is done
+                self.sprime, self.reward, self.done, info = self.env.step(action)
+                        
+                self.update_policy()
+                
+                state = self.sprime 
+                self.l = self.gamma*self.l
+                
+                # Increment the total reward in this episode
+                ep_reward += self.reward
+                
+                # Steps in episode for output required
+                t += 1
+                
+                # 3.5 Check if the episode is finished using the `done` variable and break if yes
+                if (self.done):
+                    break
+    
+            # Update the running reward /return!!
+            running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
+    
+            # Store the rewards for plotting
+            ep_rewards.append(ep_reward)
+            running_rewards.append(running_reward)
+            
+    
+            if i_episode % self.log_interval == 0:
+                print('Episode {}\tLast reward: {:.2f}\tAverage reward: {:.2f}'.format(
+                      i_episode, ep_reward, running_reward))
+            # Stopping criteria
+            if running_reward > self.reward_threshold:
                 print('Running reward is now {} and the last episode ran for {} steps!'.format(running_reward, t))
                 break
             if i_episode >= self.num_episodes:
