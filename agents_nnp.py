@@ -207,19 +207,15 @@ class MC_PolGrad_Agent(Base_Agent):
                 print('Max episodes exceeded, quitting.')
                 break
             
+            if i_episode % 150 == 0 and running_reward < -480:
+                self.policy.apply(MC_PolGrad_Agent.init_weights)
+            
             
         # Save the trained policy network
         if save:
             self.policy.save()
     
         return ep_rewards, running_rewards
-
-
-    @staticmethod
-    def init_weights(m):
-        if type(m) == nn.Linear:
-            torch.nn.init.xavier_normal_(m.weight)
-            m.bias.data.fill_(0)    
     
     
 class AAC_Agent(Base_Agent):
@@ -434,18 +430,15 @@ class AAC_Agent(Base_Agent):
             if i_episode >= self.num_episodes:
                 print('Max episodes exceeded, quitting.')
                 break
+            
+            if i_episode % 150 == 0 and running_reward < -480:
+                self.policy.apply(AAC_Agent.init_weights)
         
         # Save the trained policy network
         if save:
             self.policy.save()
     
         return ep_rewards, running_rewards
-    
-    @staticmethod
-    def init_weights(m):
-        if type(m) == nn.Linear:
-            torch.nn.init.xavier_normal_(m.weight)
-            m.bias.data.fill_(0)
             
     
 class AAC_TD_Agent(Base_Agent):
@@ -614,20 +607,14 @@ class AAC_TD_Agent(Base_Agent):
             if i_episode >= self.num_episodes:
                 print('Max episodes exceeded, quitting.')
                 break
+            
+            if i_episode % 150 == 0 and running_reward < -480:
+                self.policy.apply(AAC_TD_Agent.init_weights)
         
         # Save the trained policy network
         if save:
             self.policy.save()
     
         return ep_rewards, running_rewards
-    
-    @staticmethod
-    def init_weights(m):
-        if type(m) == nn.Linear:
-            torch.nn.init.xavier_normal_(m.weight)
-            m.bias.data.fill_(0)
             
-     
-##### Comments
- # delta = reward + gamma * self.q_network(sprime)[aprime] - 
             

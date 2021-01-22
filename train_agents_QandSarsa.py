@@ -132,8 +132,10 @@ for result in training_results:
 plt.grid()
 plt.xlabel('Episodes')
 plt.ylabel('Running average of Rewards')
-plt.legend() # ncol=1
+plt.legend(loc='lower right', ncol=1) # ncol=1
+fig.tight_layout()
 plt.show()
+fig.savefig('images/qAndSarsa_agents.pdf')
 
 #%% Save neural network of agent
 #sarsa_dqn_agent.save_q_network(save_dir="models", file_name="sarsa_dqn_qNet.pt")

@@ -14,11 +14,11 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 import copy
 
-from networks import QNetwork, PolicyNetwork
+from networks import QNetwork, QNetwork2, PolicyNetwork
 
 LR_DECAY_RATE = 0.999
 MEM_MAX_SIZE = 10000 # memory size for experience replay
-C_TARGET_NET_UPDATE = 200 # steps with constant target q-network
+C_TARGET_NET_UPDATE = 100 # steps with constant target q-network
 START_EPS_DECAY = 400 # episode
 REWARD_THRESHOLD = -50
 
@@ -34,7 +34,8 @@ class Base_Agent:
         self.env = env
         self.state_dim = env.observation_space.shape[0]
         self.num_actions = env.action_space.n
-        self.reward_threshold = self.env.spec.reward_threshold
+        self.reward_threshold = REWARD_THRESHOLD
+        # self.reward_threshold = self.env.spec.reward_threshold
 
         self.num_episodes = num_episodes
         self.num_steps = num_steps
@@ -317,7 +318,18 @@ class Base_Agent:
                 print('Max episodes exceeded, quitting.')
                 break
 
-        return ep_rewards, running_rewards  
+        return ep_rewards, running_rewards
+    
+    
+    @staticmethod
+    def init_weights(m):
+        if type(m) == nn.Linear:
+            torch.nn.init.xavier_normal_(m.weight)
+            try:
+                m.bias.data.fill_(0)
+            except:
+                print('CATCH: Xavier-normal init only applied to weights, bias not available.')
+                
 
 class Q_Agent(Base_Agent):
     """
@@ -332,7 +344,8 @@ class Q_Agent(Base_Agent):
         
         self.epsilon = epsilon
         
-        self.q_network = QNetwork(env=self.env, hidden_dim=hidden_dim)
+        self.q_net = QNetwork(env=self.env, hidden_dim=hidden_dim)
+        self.q_net.apply(Q_Agent.init_weights)
         
         self.optimizer = optim.Adam(self.q_network.parameters(), lr=self.learning_rate)
         # self.optimizer = optim.SGD(self.q_network.parameters(), lr=self.learning_rate)
@@ -386,7 +399,7 @@ class Q_Agent(Base_Agent):
             while (not done):
                 
                 # Use the state as input to compute the q-values (for all actions in 1 forward pass)
-                q = self.q_network(torch.autograd.Variable(torch.from_numpy(state).type(torch.FloatTensor)))
+                q = self.q_net(torch.autograd.Variable(torch.from_numpy(state).type(torch.FloatTensor)))
                                 
                 if self.act_sel == 'eps_decay':
                     action = self.eps_greedy_action(q)
@@ -398,7 +411,7 @@ class Q_Agent(Base_Agent):
                                 
                 # Find max q for next state
                 with torch.no_grad():
-                    q_next = self.q_network(torch.autograd.Variable(torch.from_numpy(next_state).type(torch.FloatTensor)))
+                    q_next = self.q_net(torch.autograd.Variable(torch.from_numpy(next_state).type(torch.FloatTensor)))
                     q_next = q_next.detach()
                 max_q_next, _ = torch.max(q_next, -1)
                 
@@ -411,7 +424,7 @@ class Q_Agent(Base_Agent):
                 loss = self.criteria(q, q_target)
 
                 # Update policy
-                self.q_network.zero_grad()
+                self.q_net.zero_grad()
                 loss.backward()
                 self.optimizer.step()
                 
@@ -446,6 +459,10 @@ class Q_Agent(Base_Agent):
             if i_episode >= self.num_episodes:
                 print('Max episodes exceeded, quitting.')
                 break
+            
+            if i_episode % 150 == 0 and running_reward < -480:
+                self.q_net.apply(Q_Agent.init_weights)
+                
 
         return ep_rewards, running_rewards    
 
@@ -464,7 +481,8 @@ class SARSA_Agent(Base_Agent):
         
         self.epsilon = epsilon
         
-        self.q_network = QNetwork(env=self.env, hidden_dim=hidden_dim)
+        self.q_net = QNetwork(env=self.env, hidden_dim=hidden_dim)
+        self.q_net.apply(Base_Agent.init_weights)
         
         self.optimizer = optim.Adam(self.q_network.parameters(), lr=self.learning_rate)
         self.criteria = nn.MSELoss()
@@ -513,7 +531,7 @@ class SARSA_Agent(Base_Agent):
             t = 0
             
             # Use the state as input to compute the q-values (for all actions in 1 forward pass)
-            q = self.q_network(torch.autograd.Variable(torch.from_numpy(state).type(torch.FloatTensor)))
+            q = self.q_net(torch.autograd.Variable(torch.from_numpy(state).type(torch.FloatTensor)))
 
             if self.act_sel == 'eps_decay':
                 action = self.eps_greedy_action(q)
@@ -523,14 +541,14 @@ class SARSA_Agent(Base_Agent):
             # For each step of the episode
             while (not done):
                 # Use the state as input to compute the q-values (for all actions in 1 forward pass)
-                q = self.q_network(torch.autograd.Variable(torch.from_numpy(state).type(torch.FloatTensor)))
+                q = self.q_net(torch.autograd.Variable(torch.from_numpy(state).type(torch.FloatTensor)))
                 
                 # Perform the action and observe the next_state and reward
                 next_state, reward, done, _ = self.env.step(action)
                 
                 #### Perform next action
                 # Use the state as input to compute the q-values (for all actions in 1 forward pass)
-                qprime = self.q_network(torch.autograd.Variable(torch.from_numpy(next_state).type(torch.FloatTensor)))
+                qprime = self.q_net(torch.autograd.Variable(torch.from_numpy(next_state).type(torch.FloatTensor)))
                 
                 if self.act_sel == 'eps_decay':
                     aprime = self.eps_greedy_action(qprime)
@@ -539,7 +557,7 @@ class SARSA_Agent(Base_Agent):
                 
                 # Find q for next state and action
                 with torch.no_grad():
-                    q_next = self.q_network(torch.autograd.Variable(torch.from_numpy(next_state).type(torch.FloatTensor)))
+                    q_next = self.q_net(torch.autograd.Variable(torch.from_numpy(next_state).type(torch.FloatTensor)))
                     q_next = q_next.detach()
                     q_next_a = q_next[aprime]
                     
@@ -552,7 +570,7 @@ class SARSA_Agent(Base_Agent):
                 loss = self.criteria(q, q_target)
 
                 # Update policy
-                self.q_network.zero_grad()
+                self.q_net.zero_grad()
                 loss.backward()
                 self.optimizer.step()
                 
@@ -591,7 +609,10 @@ class SARSA_Agent(Base_Agent):
             if i_episode >= self.num_episodes:
                 print('Max episodes exceeded, quitting.')
                 break
-
+            
+            if i_episode % 150 == 0 and running_reward < -480:
+                self.q_net.apply(SARSA_Agent.init_weights)
+                
         return ep_rewards, running_rewards
     
 
@@ -612,6 +633,7 @@ class Q_DQN_Agent(Base_Agent):
         # Networks
         self.q_net = QNetwork(env=self.env, hidden_dim=hidden_dim)
         self.target_q_net = QNetwork(env=self.env, hidden_dim=hidden_dim)
+        self.q_net.apply(Base_Agent.init_weights)
         
         # Optimizer
         self.optimizer = optim.Adam(self.q_net.parameters(), lr=self.learning_rate)
@@ -775,10 +797,13 @@ class Q_DQN_Agent(Base_Agent):
             if i_episode >= self.num_episodes:
                 print('Max episodes exceeded, quitting.')
                 break
+            
+            if i_episode % 150 == 0 and running_reward < -480:
+                self.q_net.apply(Q_DQN_Agent.init_weights)
 
         return ep_rewards, running_rewards
-    
-
+            
+            
 #%%
 class SARSA_DQN_Agent(Base_Agent):
     """
@@ -795,6 +820,7 @@ class SARSA_DQN_Agent(Base_Agent):
         
         self.q_net = QNetwork(env=self.env, hidden_dim=hidden_dim)
         self.target_q_net = QNetwork(env=self.env, hidden_dim=hidden_dim)
+        self.q_net.apply(Base_Agent.init_weights)
         
         self.optimizer = optim.Adam(self.q_net.parameters(), lr=self.learning_rate)
         
@@ -972,6 +998,9 @@ class SARSA_DQN_Agent(Base_Agent):
             if i_episode >= self.num_episodes:
                 print('Max episodes exceeded, quitting.')
                 break
+            
+            if i_episode % 150 == 0 and running_reward < -480:
+                self.q_net.apply(SARSA_DQN_Agent.init_weights)
 
         return ep_rewards, running_rewards
     

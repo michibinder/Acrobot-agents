@@ -26,6 +26,7 @@ class QNetwork(nn.Module):
         # Layers
         self.l1 = nn.Linear(self.state_space, self.hidden_dim, bias=False)
         self.l2 = nn.Linear(self.hidden_dim, self.action_space, bias=False)
+
     
     def forward(self, x):    
         model = torch.nn.Sequential(
@@ -50,6 +51,67 @@ class QNetwork(nn.Module):
         # Set the network to evaluation mode
         network.eval()
         return network
+    
+
+class QNetwork2(nn.Module):
+    """
+    A fully connected neural network with 1 hidden layer.
+    """
+    def __init__(self, env, hidden_dim=100, dropout=0.4):
+        super(QNetwork2, self).__init__()
+        self.env = env
+        self.state_space = env.observation_space.shape[0] # 6
+        self.action_space = env.action_space.n # 3
+        self.hidden_dim = hidden_dim
+        
+        # Layer definitions
+        self.affine1 = nn.Linear(self.state_space, self.hidden_dim)
+        self.dropout1 = nn.Dropout(p=dropout)        
+        self.affine2 = nn.Linear(self.hidden_dim, self.hidden_dim)
+        self.dropout2 = nn.Dropout(p=dropout)
+        self.affine3 = nn.Linear(self.hidden_dim, self.action_space)
+        
+        
+    def forward(self, x):
+        """
+        Defines the forward pass of the policy network.
+        
+        Args:
+            x (Tensor): The current state as observed by the agent.
+        Returns:
+            (Tensor): Action probabilities.
+        """        
+        model = torch.nn.Sequential(
+            self.affine1,
+            self.dropout1,
+            nn.ReLU(),
+            self.affine2,
+            self.dropout2,
+            nn.ReLU(),
+            self.affine3
+        )
+        
+        out = model(x)
+        # out = F.softmax(numerical_prefs, dim=1)
+        return out
+    
+
+    def save(self, save_dir="models", file_name="q_network.pt"):
+        # Save the model state
+        if not (os.path.exists(save_dir) and os.path.isdir(save_dir)):
+            os.makedirs(save_dir)
+        torch.save(self.state_dict(), os.path.join(save_dir, file_name))
+
+    @staticmethod
+    def load(env, save_dir="models", file_name="q_network.pt"):
+        # Create a network object with the constructor parameters
+        network = QNetwork(env)
+        # Load the weights
+        network.load_state_dict(torch.load(os.path.join(save_dir, file_name)))
+        # Set the network to evaluation mode
+        network.eval()
+        return network
+
     
     
 class PolicyNetwork(nn.Module):

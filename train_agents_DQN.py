@@ -32,50 +32,42 @@ EPS = 0.3
 LR_QNET = 0.0001
 GAMMA = 0.99
 HIDDEN_DIM_QNET = 32
-HIDDEN_DIM_QNET_2 = 64
-MINI_BATCH_SIZE = 8 # for experience replay
-MINI_BATCH_SIZE_2 = 16
+HIDDEN_DIM_QNET_2 = 32
+MINI_BATCH_SIZE = 32 # for experience replay
+MINI_BATCH_SIZE_2 = 32
 LOG_INTERVAL = 100
 
 
-# #%% Train Q-Agent (semi-gradient) ###
-# hyperparam_dict = {'name': 'Q-Agent', 'learning_rate':LR_QNET, 'gamma':GAMMA, 'epsilon':EPS}
-# q_agent = Q_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_QNET,
-#                   gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, log_interval=LOG_INTERVAL)
-# ep_rewards, running_rewards = q_agent.train()
+#%% Train SARSA_DQN-Agent (semi-gradient) ###
+hyperparam_dict = {'name': 'SARSA-DQN (' + str(HIDDEN_DIM_QNET) + ')'}
+sarsa_dqn_agent = SARSA_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_QNET,
+                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=True, act_sel='softmax', batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = sarsa_dqn_agent.train()
+training_results.append((hyperparam_dict, ep_rewards, running_rewards))
+
+
+#%% Train SARSA_DQN-Agent (semi-gradient) ###
+hyperparam_dict = {'name': 'SARSA-DQN (' + str(HIDDEN_DIM_QNET) + ')'}
+sarsa_dqn_agent = SARSA_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_QNET,
+                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=True, act_sel='softmax', batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = sarsa_dqn_agent.train()
+training_results.append((hyperparam_dict, ep_rewards, running_rewards))
+
+
+# #%% Train SARSA_DQN-Agent (semi-gradient) ###
+# hyperparam_dict = {'name': 'SARSA-DQN (' + str(HIDDEN_DIM_QNET_2) + ')'}
+# sarsa_dqn_agent = SARSA_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_QNET,
+#                   gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, const_target=True, act_sel='softmax', batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = sarsa_dqn_agent.train()
 # training_results.append((hyperparam_dict, ep_rewards, running_rewards))
 
 
-#%% Train SARSA_DQN-Agent (semi-gradient) ###
-hyperparam_dict = {'name': 'SARSA-DQN (' + str(HIDDEN_DIM_QNET) + ')'}
-sarsa_dqn_agent = SARSA_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=True, act_sel='softmax', batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = sarsa_dqn_agent.train()
-training_results.append((hyperparam_dict, ep_rewards, running_rewards))
-
-
-#%% Train SARSA_DQN-Agent (semi-gradient) ###
-hyperparam_dict = {'name': 'SARSA-DQN (' + str(HIDDEN_DIM_QNET) + ')'}
-sarsa_dqn_agent = SARSA_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=True, act_sel='softmax', batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = sarsa_dqn_agent.train()
-training_results.append((hyperparam_dict, ep_rewards, running_rewards))
-
-
-#%% Train SARSA_DQN-Agent (semi-gradient) ###
-hyperparam_dict = {'name': 'SARSA-DQN (' + str(HIDDEN_DIM_QNET_2) + ')'}
-sarsa_dqn_agent = SARSA_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, const_target=True, act_sel='softmax', batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = sarsa_dqn_agent.train()
-training_results.append((hyperparam_dict, ep_rewards, running_rewards))
-
-
-#%% Train SARSA_DQN-Agent (semi-gradient) ###
-hyperparam_dict = {'name': 'SARSA-DQN (' + str(HIDDEN_DIM_QNET_2) + ')'}
-sarsa_dqn_agent = SARSA_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, const_target=True, act_sel='softmax', batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = sarsa_dqn_agent.train()
-training_results.append((hyperparam_dict, ep_rewards, running_rewards))
+# #%% Train SARSA_DQN-Agent (semi-gradient) ###
+# hyperparam_dict = {'name': 'SARSA-DQN (' + str(HIDDEN_DIM_QNET_2) + ')'}
+# sarsa_dqn_agent = SARSA_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_QNET,
+#                   gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, const_target=True, act_sel='softmax', batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = sarsa_dqn_agent.train()
+# training_results.append((hyperparam_dict, ep_rewards, running_rewards))
 
 
 #%% Train Q_DQN-Agent (semi-gradient) ###
@@ -94,23 +86,23 @@ ep_rewards, running_rewards = q_dqn_agent.train()
 training_results.append((hyperparam_dict, ep_rewards, running_rewards))
 
 
-#%% Train Q_DQN-Agent (semi-gradient) ###
-hyperparam_dict = {'name': 'Q-DQN (' + str(HIDDEN_DIM_QNET_2) + ')'}
-q_dqn_agent = Q_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, const_target=True, act_sel='softmax', batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = q_dqn_agent.train()
-training_results.append((hyperparam_dict, ep_rewards, running_rewards))
+# #%% Train Q_DQN-Agent (semi-gradient) ###
+# hyperparam_dict = {'name': 'Q-DQN (' + str(HIDDEN_DIM_QNET_2) + ')'}
+# q_dqn_agent = Q_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_QNET,
+#                   gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, const_target=True, act_sel='softmax', batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = q_dqn_agent.train()
+# training_results.append((hyperparam_dict, ep_rewards, running_rewards))
 
-#%% Train Q_DQN-Agent (semi-gradient) ###
-hyperparam_dict = {'name': 'Q-DQN (' + str(HIDDEN_DIM_QNET_2) + ')'}
-q_dqn_agent = Q_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, const_target=True, act_sel='softmax', batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = q_dqn_agent.train()
-training_results.append((hyperparam_dict, ep_rewards, running_rewards))
+# #%% Train Q_DQN-Agent (semi-gradient) ###
+# hyperparam_dict = {'name': 'Q-DQN (' + str(HIDDEN_DIM_QNET_2) + ')'}
+# q_dqn_agent = Q_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_QNET,
+#                   gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, const_target=True, act_sel='softmax', batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = q_dqn_agent.train()
+# training_results.append((hyperparam_dict, ep_rewards, running_rewards))
 
 
 #%% VISUALIZATION
-plt.rcParams.update({'font.size': 18})
+plt.rcParams.update({'font.size': 8})
 width = 185/25.4
 FIGSIZE = (width,width*1/3)
 
@@ -131,8 +123,10 @@ for result in training_results:
 plt.grid()
 plt.xlabel('Episodes')
 plt.ylabel('Running average of Rewards')
-plt.legend() # ncol=1
+plt.legend(loc='lower right', ncol=1) # ncol=1
+fig.tight_layout()
 plt.show()
+fig.savefig('images/DQN_agents.pdf')
 
 #%% Save neural network of agent
 #sarsa_dqn_agent.save_q_network(save_dir="models", file_name="sarsa_dqn_qNet.pt")

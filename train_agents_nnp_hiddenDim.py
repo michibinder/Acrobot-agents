@@ -35,19 +35,26 @@ HIDDEN_DIM_POL = 128
 HIDDEN_DIM_POL_2 = 32
 LOG_INTERVAL = 100
 
-#%% Train Monte Carlo policy gradient Agent (REINFORCE - Agent) ###
-hyperparam_dict = {'name': 'MC_PolGrad (' + str(HIDDEN_DIM_POL) + ')'}
-mc_polGrad_agent = MC_PolGrad_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_POL,
-                      gamma=GAMMA, hidden_dim=HIDDEN_DIM_POL, dropout=DROPOUT, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = mc_polGrad_agent.train()
+#%% Train AAC-Agent (neural network policy - agent) ###
+hyperparam_dict = {'name': 'AAC (' + str(16) + ')'}
+aac_agent = AAC_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_POL,
+                      gamma=GAMMA, hidden_dim=16, dropout=DROPOUT, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = aac_agent.train()
+training_results.append((hyperparam_dict, ep_rewards, running_rewards))
+
+#%% Train AAC-Agent (neural network policy - agent) ###
+hyperparam_dict = {'name': 'AAC (' + str(32) + ')'}
+aac_agent = AAC_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_POL,
+                      gamma=GAMMA, hidden_dim=32, dropout=DROPOUT, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = aac_agent.train()
 training_results.append((hyperparam_dict, ep_rewards, running_rewards))
 
 
-#%% Train Monte Carlo policy gradient Agent (REINFORCE - Agent) ###
-hyperparam_dict = {'name': 'MC_PolGrad (' + str(HIDDEN_DIM_POL_2) + ')'}
-mc_polGrad_agent = MC_PolGrad_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_POL,
-                      gamma=GAMMA, hidden_dim=HIDDEN_DIM_POL_2, dropout=DROPOUT, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = mc_polGrad_agent.train()
+#%% Train AAC-Agent (neural network policy - agent) ###
+hyperparam_dict = {'name': 'AAC (' + str(64) + ')'}
+aac_agent = AAC_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_POL,
+                      gamma=GAMMA, hidden_dim=64, dropout=DROPOUT, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = aac_agent.train()
 training_results.append((hyperparam_dict, ep_rewards, running_rewards))
 
 
@@ -60,35 +67,29 @@ training_results.append((hyperparam_dict, ep_rewards, running_rewards))
 
 
 #%% Train AAC-Agent (neural network policy - agent) ###
-hyperparam_dict = {'name': 'AAC (' + str(HIDDEN_DIM_POL_2) + ')'}
+hyperparam_dict = {'name': 'AAC (' + str(256) + ')'}
 aac_agent = AAC_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_POL,
                       gamma=GAMMA, hidden_dim=HIDDEN_DIM_POL_2, dropout=DROPOUT, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = aac_agent.train()
 training_results.append((hyperparam_dict, ep_rewards, running_rewards))
 
 
-#%% Train AAC_TD-Agent (one-step actor-critic) ###
-hyperparam_dict = {'name': 'AAC_TD0 (' + str(HIDDEN_DIM_POL) + ')'}
-aac_td_agent = AAC_TD_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_POL,
+#%% Train AAC-Agent (neural network policy - agent) ###
+hyperparam_dict = {'name': 'AAC (' + str(256) + ')'}
+aac_agent = AAC_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_POL,
                       gamma=GAMMA, hidden_dim=HIDDEN_DIM_POL, dropout=DROPOUT, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = aac_td_agent.train()
+ep_rewards, running_rewards = aac_agent.train()
 training_results.append((hyperparam_dict, ep_rewards, running_rewards))
 
 
-#%% Train AAC_TD-Agent (one-step actor-critic)  ###
-hyperparam_dict = {'name': 'AAC_TD0 (' + str(HIDDEN_DIM_POL_2) + ')'}
-aac_td_agent = AAC_TD_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_POL,
-                      gamma=GAMMA, hidden_dim=HIDDEN_DIM_POL_2, dropout=DROPOUT, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = aac_td_agent.train()
+#%% Train AAC-Agent (neural network policy - agent) ###
+hyperparam_dict = {'name': 'AAC (' + str(512) + ')'}
+aac_agent = AAC_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_POL,
+                      gamma=GAMMA, hidden_dim=512, dropout=DROPOUT, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = aac_agent.train()
 training_results.append((hyperparam_dict, ep_rewards, running_rewards))
 
 
-#%% Random-Agent ###
-hyperparam_dict = {'name': 'Random-Agent', 'learning_rate':LR_POL, 'hidden_dim':HIDDEN_DIM_POL}
-base_agent = Base_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_POL,
-                      gamma=GAMMA, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = base_agent.random_policy()
-training_results.append((hyperparam_dict, ep_rewards, running_rewards))
 
 
 #%% VISUALIZATION
