@@ -69,14 +69,6 @@ training_results.append((hyperparam_dict, ep_rewards, running_rewards))
 #%% Train AAC-Agent (neural network policy - agent) ###
 hyperparam_dict = {'name': 'AAC (' + str(256) + ')'}
 aac_agent = AAC_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_POL,
-                      gamma=GAMMA, hidden_dim=HIDDEN_DIM_POL_2, dropout=DROPOUT, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = aac_agent.train()
-training_results.append((hyperparam_dict, ep_rewards, running_rewards))
-
-
-#%% Train AAC-Agent (neural network policy - agent) ###
-hyperparam_dict = {'name': 'AAC (' + str(256) + ')'}
-aac_agent = AAC_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_POL,
                       gamma=GAMMA, hidden_dim=HIDDEN_DIM_POL, dropout=DROPOUT, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = aac_agent.train()
 training_results.append((hyperparam_dict, ep_rewards, running_rewards))
@@ -118,7 +110,7 @@ plt.ylabel('Running average of Rewards')
 plt.legend(loc='lower right', ncol=1) # ncol=1
 fig.tight_layout()
 plt.show()
-fig.savefig('images/nnp_agents.pdf')
+fig.savefig('images/AAC_hidden_Dim_comp.pdf')
 #%% Save neural network of agent
 # aac_agent.save_pol_network(save_dir="models", file_name="aac_polNet.pt")
 
