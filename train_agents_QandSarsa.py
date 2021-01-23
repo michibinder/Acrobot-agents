@@ -13,7 +13,7 @@ import torch
 
 # from networks import NNetwork, NeuralNetworkPolicy
 from agents import Base_Agent, Q_Agent, Q_DQN_Agent, SARSA_Agent, SARSA_DQN_Agent
-from agents_nnp import AAC_Agent, MC_PolGrad_Agent
+from agents_nnp import A2C_Agent, MC_PolGrad_Agent
 
 #%% ENVIRONMENT
 env = gym.make('Acrobot-v1')
@@ -26,7 +26,7 @@ env.seed(random_seed)
 
 #%% TRAINING
 training_results = list() # A list for storing the hyperparameters and the corresponding results
-MAX_EPISODES = 800
+MAX_EPISODES = 1000
 MAX_STEPS = 500
 EPS = 0.3
 LR_QNET = 0.0001
@@ -37,101 +37,179 @@ LOG_INTERVAL = 100
 
 
 #%% Train Q-Agent (semi-gradient) ###
+agent_results = list()
 hyperparam_dict = {'name': 'Q (' + str(HIDDEN_DIM_QNET) + ')'}
-q_agent = Q_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = q_agent.train()
-training_results.append((hyperparam_dict, ep_rewards, running_rewards))
+agent = Q_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.train()
+agent_results.append(running_rewards)
+
+agent = Q_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.train()
+agent_results.append(running_rewards)
+
+agent = Q_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.train()
+agent_results.append(running_rewards)
+
+agent = Q_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.train()
+agent_results.append(running_rewards)
+agent_results = np.array(agent_results)
+rewards_mu = agent_results.mean(axis=0)
+rewards_sigma = agent_results.std(axis=0)
+training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
 
 
 #%% Train Q-Agent (semi-gradient) ###
-hyperparam_dict = {'name': 'Q (' + str(HIDDEN_DIM_QNET) + ')'}
-q_agent = Q_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = q_agent.train()
-training_results.append((hyperparam_dict, ep_rewards, running_rewards))
+agent_results = list()
+hyperparam_dict = {'name': 'Q (' + str(HIDDEN_DIM_QNET_2) + ')'}
+agent = Q_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.train()
+agent_results.append(running_rewards)
 
+agent = Q_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.train()
+agent_results.append(running_rewards)
 
-#%% Train Q-Agent (semi-gradient) ###
-hyperparam_dict = {'name': 'Q ('+ str(HIDDEN_DIM_QNET_2) + ')'}
-q_agent = Q_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = q_agent.train()
-training_results.append((hyperparam_dict, ep_rewards, running_rewards))
+agent = Q_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.train()
+agent_results.append(running_rewards)
 
-
-#%% Train Q-Agent (semi-gradient) ###
-hyperparam_dict = {'name': 'Q ('+ str(HIDDEN_DIM_QNET_2) + ')'}
-q_agent = Q_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = q_agent.train()
-training_results.append((hyperparam_dict, ep_rewards, running_rewards))
+agent = Q_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.train()
+agent_results.append(running_rewards)
+agent_results = np.array(agent_results)
+rewards_mu = agent_results.mean(axis=0)
+rewards_sigma = agent_results.std(axis=0)
+training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
 
 
 #%% Train SARSA-Agent (semi-gradient) ###
+agent_results = list()
 hyperparam_dict = {'name': 'SARSA (' + str(HIDDEN_DIM_QNET) + ')'}
-sarsa_agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = sarsa_agent.train()
-training_results.append((hyperparam_dict, ep_rewards, running_rewards))
+agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.train()
+agent_results.append(running_rewards)
+
+agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.train()
+agent_results.append(running_rewards)
+
+agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.train()
+agent_results.append(running_rewards)
+
+agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.train()
+agent_results.append(running_rewards)
+agent_results = np.array(agent_results)
+rewards_mu = agent_results.mean(axis=0)
+rewards_sigma = agent_results.std(axis=0)
+training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
 
 
 #%% Train SARSA-Agent (semi-gradient) ###
-hyperparam_dict = {'name': 'SARSA (' + str(HIDDEN_DIM_QNET) + ')'}
-sarsa_agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = sarsa_agent.train()
-training_results.append((hyperparam_dict, ep_rewards, running_rewards))
-
-
-#%% Train SARSA-Agent (semi-gradient) ###
-hyperparam_dict = {'name': 'SARSA ('+ str(HIDDEN_DIM_QNET_2) + ')'}
-sarsa_agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = sarsa_agent.train()
-training_results.append((hyperparam_dict, ep_rewards, running_rewards))
-
-
-#%% Train SARSA-Agent (semi-gradient) ###
+agent_results = list()
 hyperparam_dict = {'name': 'SARSA (' + str(HIDDEN_DIM_QNET_2) + ')'}
-sarsa_agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = sarsa_agent.train()
-training_results.append((hyperparam_dict, ep_rewards, running_rewards))
+agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.train()
+agent_results.append(running_rewards)
+
+agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.train()
+agent_results.append(running_rewards)
+
+agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.train()
+agent_results.append(running_rewards)
+
+agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.train()
+agent_results.append(running_rewards)
+agent_results = np.array(agent_results)
+rewards_mu = agent_results.mean(axis=0)
+rewards_sigma = agent_results.std(axis=0)
+training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
 
 
 #%% Random-Agent ###
+from agents import Base_Agent
+agent_results = list()
 hyperparam_dict = {'name': 'Random'}
-base_agent = Base_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=0.001,
+agent = Base_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=0.001,
                       gamma=0.99, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = base_agent.random_policy()
-training_results.append((hyperparam_dict, ep_rewards, running_rewards))
+ep_rewards, running_rewards = agent.random_policy()
+agent_results.append(running_rewards)
+
+agent = Base_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=0.001,
+                      gamma=0.99, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.random_policy()
+agent_results.append(running_rewards)
+
+agent = Base_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=0.001,
+                      gamma=0.99, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.random_policy()
+agent_results.append(running_rewards)
+
+agent = Base_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=0.001,
+                      gamma=0.99, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.random_policy()
+agent_results.append(running_rewards)
+agent_results = np.array(agent_results)
+rewards_mu = agent_results.mean(axis=0)
+rewards_sigma = agent_results.std(axis=0)
+training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
+
+# hyperparam_dict = {'name': 'Random'}
+# agent = Base_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=0.001,
+#                       gamma=0.99, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = agent.random_policy()
+# training_results.append((hyperparam_dict, ep_rewards, running_rewards))
 
 
 #%% VISUALIZATION
-plt.rcParams.update({'font.size': 18})
-width = 185/25.4
-FIGSIZE = (width,width*1/3)
-
+plt.rcParams.update({'font.size': 9})
+width = 170/25.4 # 6.7in
+# FIGSIZE = (width,width*1/3)
+FIGSIZE = (width,width*3/8)
 
 # Plot the results
-fig = plt.figure(1, figsize=FIGSIZE)
-
+fig, ax = plt.subplots(figsize=FIGSIZE)
+i=1
 for result in training_results:
+    # i += 1
+    # if not i%2==0:
+    #     continue
     hp = result[0]
-    ep_rewards = result[1]
-    running_rewards = result[2]
-    # plt.plot(range(len(ep_rewards)), ep_rewards, lw=2, color="red", label=hp['name'])
-    plt.plot(range(len(running_rewards)), running_rewards, lw=2, label=hp['name'])
+    mu = result[1]
+    sigma = result[2]
+     
+    plt.plot(range(len(mu)), mu, lw=1.2, label=hp['name'])
+    ax.fill_between(range(len(mu)), mu+sigma, mu-sigma, alpha=0.5)
     
-    # no title for paper
-    # title_str = hp['name'] + '($\gamma$:' + str(hp['gamma']) + ',lr:' + str(hp['learning_rate']) + ')'
-    # title_str = "Acrobot-v1 ($hiddenDim_{qnet}$: " + str(HIDDEN_DIM_QNET) + ")"
+    # plt.plot(range(len(ep_rewards)), ep_rewards, lw=2, color="red", label=hp['name'])
+    # title_str = "Acrobot-v1 ($hiddenDim_{qnet}$: " + str(HIDDEN_DIM_QNET) + ", $hiddenDim_{pol}$: " + str(HIDDEN_DIM_POL) + ")"
     # plt.title(title_str)
 
 plt.grid()
 plt.xlabel('Episodes')
-plt.ylabel('Running average of Rewards')
+plt.ylabel('Rewards$_{EMA}$')
 plt.legend(loc='lower right', ncol=1) # ncol=1
 fig.tight_layout()
 plt.show()

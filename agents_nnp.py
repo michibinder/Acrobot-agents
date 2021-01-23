@@ -18,6 +18,8 @@ from itertools import chain
 from networks import PolicyNetwork, CriticNetwork, ActorCriticNetworks
 from agents import Base_Agent
 
+RE_INIT_VAL = -480
+RE_INIT_EP = 150
 
 class MC_PolGrad_Agent(Base_Agent):
     """
@@ -31,7 +33,7 @@ class MC_PolGrad_Agent(Base_Agent):
         super().__init__(env, num_episodes, num_steps, learning_rate, gamma, log_interval=log_interval)
         
         self.policy = PolicyNetwork(self.env, hidden_dim=hidden_dim, dropout=dropout)
-        self.policy.apply(MC_PolGrad_Agent.init_weights)
+        self.policy.apply(Base_Agent.init_weights)
         
         # Define the optimizer and set the learning rate
         self.optimizer = optim.Adam(self.policy.parameters(), lr=self.learning_rate)
@@ -143,9 +145,6 @@ class MC_PolGrad_Agent(Base_Agent):
         # Set the training mode
         self.policy.train()
     
-        # To track the reward across consecutive episodes (smoothed)
-        running_reward = self.running_reward_start
-    
         # Lists to store the episodic and running rewards for plotting
         ep_rewards = list()
         running_rewards = list()
@@ -186,8 +185,11 @@ class MC_PolGrad_Agent(Base_Agent):
                 if (done):
                     break
     
-            # Update the running reward /return!!
-            running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
+            # Update the running reward
+            if i_episode==1:
+                running_reward = ep_reward
+            else:
+                running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
     
             # Store the rewards for plotting
             ep_rewards.append(ep_reward)
@@ -207,8 +209,8 @@ class MC_PolGrad_Agent(Base_Agent):
                 print('Max episodes exceeded, quitting.')
                 break
             
-            if i_episode % 150 == 0 and running_reward < -480:
-                self.policy.apply(MC_PolGrad_Agent.init_weights)
+            if i_episode % RE_INIT_EP == 0 and running_reward < RE_INIT_VAL:
+                self.policy.apply(Base_Agent.init_weights)
             
             
         # Save the trained policy network
@@ -218,7 +220,7 @@ class MC_PolGrad_Agent(Base_Agent):
         return ep_rewards, running_rewards
     
     
-class AAC_Agent(Base_Agent):
+class A2C_Agent(Base_Agent):
     """
     A Q actor-critic policy (NN) policy agent.
     """
@@ -234,7 +236,7 @@ class AAC_Agent(Base_Agent):
         self.critic = CriticNetwork(env, hidden_dim=hidden_dim, dropout=dropout)
         
         self.policy = ActorCriticNetworks(self.actor, self.critic)
-        self.policy.apply(AAC_Agent.init_weights)
+        self.policy.apply(Base_Agent.init_weights)
         
         ### Optimizer
         self.optimizer = optim.Adam(self.policy.parameters(), lr=self.learning_rate)
@@ -362,9 +364,6 @@ class AAC_Agent(Base_Agent):
     
         # Set the training mode
         self.actor.train()
-        
-        # To track the reward across consecutive episodes (smoothed)
-        running_reward = self.running_reward_start
     
         # Lists to store the episodic and running rewards for plotting
         ep_rewards = list()
@@ -406,13 +405,19 @@ class AAC_Agent(Base_Agent):
                 # Steps in episode for output required
                 t += 1
                 
+                if t>=self.num_steps:
+                    done = True
+                    
                 # 3.5 Check if the episode is finished using the `done` variable and break if yes
                 if (done):
                     break
     
-            # Update the running reward /return!!
-            running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
-    
+            # Update the running reward
+            if i_episode==1:
+                running_reward = ep_reward
+            else:
+                running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
+            
             # Store the rewards for plotting
             ep_rewards.append(ep_reward)
             running_rewards.append(running_reward)
@@ -431,8 +436,8 @@ class AAC_Agent(Base_Agent):
                 print('Max episodes exceeded, quitting.')
                 break
             
-            if i_episode % 150 == 0 and running_reward < -480:
-                self.policy.apply(AAC_Agent.init_weights)
+            if i_episode % RE_INIT_EP == 0 and running_reward < RE_INIT_VAL:
+                self.policy.apply(Base_Agent.init_weights)
         
         # Save the trained policy network
         if save:
@@ -441,7 +446,7 @@ class AAC_Agent(Base_Agent):
         return ep_rewards, running_rewards
             
     
-class AAC_TD_Agent(Base_Agent):
+class TD_A2C_Agent(Base_Agent):
     """
     A Q actor-critic policy (NN) policy agent.
     """
@@ -458,7 +463,7 @@ class AAC_TD_Agent(Base_Agent):
         self.critic = CriticNetwork(env, hidden_dim=hidden_dim, dropout=dropout)
         
         self.policy = ActorCriticNetworks(self.actor, self.critic)
-        self.policy.apply(AAC_Agent.init_weights)
+        self.policy.apply(Base_Agent.init_weights)
         
         ### Optimizer
         self.optimizer = optim.Adam(self.policy.parameters(), lr=self.learning_rate)
@@ -540,9 +545,6 @@ class AAC_TD_Agent(Base_Agent):
     
         # Set the training mode
         self.actor.train()
-        
-        # To track the reward across consecutive episodes (smoothed)
-        running_reward = self.running_reward_start
     
         # Lists to store the episodic and running rewards for plotting
         ep_rewards = list()
@@ -589,8 +591,11 @@ class AAC_TD_Agent(Base_Agent):
                 if (self.done):
                     break
     
-            # Update the running reward /return!!
-            running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
+            # Update the running reward
+            if i_episode==1:
+                running_reward = ep_reward
+            else:
+                running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
     
             # Store the rewards for plotting
             ep_rewards.append(ep_reward)
@@ -608,8 +613,8 @@ class AAC_TD_Agent(Base_Agent):
                 print('Max episodes exceeded, quitting.')
                 break
             
-            if i_episode % 150 == 0 and running_reward < -480:
-                self.policy.apply(AAC_TD_Agent.init_weights)
+            if i_episode % RE_INIT_EP == 0 and running_reward < RE_INIT_VAL:
+                self.policy.apply(Base_Agent.init_weights)
         
         # Save the trained policy network
         if save:

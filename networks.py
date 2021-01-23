@@ -55,7 +55,9 @@ class QNetwork(nn.Module):
 
 class QNetwork2(nn.Module):
     """
-    A fully connected neural network with 1 hidden layer.
+    A fully connected neural network with 2 hidden layers and dropout. It 
+    was tried to replace the more simple and smaller QNetwork, but it was not improving 
+    performance.
     """
     def __init__(self, env, hidden_dim=100, dropout=0.4):
         super(QNetwork2, self).__init__()
@@ -116,7 +118,9 @@ class QNetwork2(nn.Module):
     
 class PolicyNetwork(nn.Module):
     """
-    Neural network policy.
+    A neural network to directly learn the policy of the agent instead of the
+    action-value function. Represents the actor within an actor-critic agent,
+    too.
     """
     def __init__(self, env, hidden_dim=100, dropout=0.6):
         super(PolicyNetwork, self).__init__()
@@ -201,8 +205,8 @@ class PolicyNetwork(nn.Module):
 
 class CriticNetwork(nn.Module):
     """
-    Network for Actor-Critic value function approximation
-    --> Represents the critic part
+    A neural network for learning the Critic part (state-value function)
+    within an Actor-Critic agent
     """
     def __init__(self, env, hidden_dim=100, dropout=0.6):
         super().__init__()
@@ -239,6 +243,10 @@ class CriticNetwork(nn.Module):
     
     
 class ActorCriticNetworks(nn.Module):
+    """
+    Combines the actor and the critic network, to evaluate both with a one-line
+    statement in the train-function of the agent.
+    """
     def __init__(self, actor, critic):
         super().__init__()
         

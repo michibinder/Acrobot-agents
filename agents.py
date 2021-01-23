@@ -16,6 +16,9 @@ import copy
 
 from networks import QNetwork, QNetwork2, PolicyNetwork
 
+RE_INIT_VAL = -490
+RE_INIT_EP = 150
+
 LR_DECAY_RATE = 0.999
 MEM_MAX_SIZE = 10000 # memory size for experience replay
 C_TARGET_NET_UPDATE = 100 # steps with constant target q-network
@@ -24,7 +27,7 @@ REWARD_THRESHOLD = -50
 
 class Base_Agent:
     """
-    A basic agent.
+    A basic agent with functions for evaluation and 
     """
 
     def __init__(self, env, num_episodes, num_steps, learning_rate, gamma, log_interval=100):
@@ -44,7 +47,7 @@ class Base_Agent:
         self.gamma = gamma
         
         self.log_interval = log_interval
-        self.running_reward_start = -500
+        
        
     def random_action(self):
         """
@@ -256,9 +259,6 @@ class Base_Agent:
         # Array to store cumulative rewards per episode
         ep_rewards = np.zeros((self.num_episodes, 1))
         
-        # To track the reward across consecutive episodes (smoothed)
-        running_reward = self.running_reward_start
-        
         # Lists to store the episodic and running rewards for plotting
         ep_rewards = list()
         running_rewards = list()
@@ -301,7 +301,10 @@ class Base_Agent:
                     done = True
             
             # Update the running reward
-            running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
+            if i_episode==1:
+                running_reward = ep_reward
+            else:
+                running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
             
             # Store the rewards for plotting
             ep_rewards.append(ep_reward)
@@ -347,7 +350,7 @@ class Q_Agent(Base_Agent):
         self.q_net = QNetwork(env=self.env, hidden_dim=hidden_dim)
         self.q_net.apply(Q_Agent.init_weights)
         
-        self.optimizer = optim.Adam(self.q_network.parameters(), lr=self.learning_rate)
+        self.optimizer = optim.Adam(self.q_net.parameters(), lr=self.learning_rate)
         # self.optimizer = optim.SGD(self.q_network.parameters(), lr=self.learning_rate)
         self.criteria = nn.MSELoss()
         
@@ -369,9 +372,6 @@ class Q_Agent(Base_Agent):
         """
         # Array to store cumulative rewards per episode
         ep_rewards = np.zeros((self.num_episodes, 1))
-        
-        # To track the reward across consecutive episodes (smoothed)
-        running_reward = self.running_reward_start
         
         # Lists to store the episodic and running rewards for plotting
         ep_rewards = list()
@@ -443,7 +443,10 @@ class Q_Agent(Base_Agent):
                     done = True
             
             # Update the running reward
-            running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
+            if i_episode==1:
+                running_reward = ep_reward
+            else:
+                running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
             
             # Store the rewards for plotting
             ep_rewards.append(ep_reward)
@@ -460,7 +463,7 @@ class Q_Agent(Base_Agent):
                 print('Max episodes exceeded, quitting.')
                 break
             
-            if i_episode % 150 == 0 and running_reward < -480:
+            if i_episode % RE_INIT_EP == 0 and running_reward < RE_INIT_VAL:
                 self.q_net.apply(Q_Agent.init_weights)
                 
 
@@ -484,7 +487,7 @@ class SARSA_Agent(Base_Agent):
         self.q_net = QNetwork(env=self.env, hidden_dim=hidden_dim)
         self.q_net.apply(Base_Agent.init_weights)
         
-        self.optimizer = optim.Adam(self.q_network.parameters(), lr=self.learning_rate)
+        self.optimizer = optim.Adam(self.q_net.parameters(), lr=self.learning_rate)
         self.criteria = nn.MSELoss()
         
         # Learning rate schedule
@@ -507,9 +510,6 @@ class SARSA_Agent(Base_Agent):
         # Lists to store the episodic and running rewards for plotting
         ep_rewards = list()
         running_rewards = list()
-        
-        # To track the reward across consecutive episodes (smoothed)
-        running_reward = self.running_reward_start
         
         # Track training
         print('Training...')
@@ -591,8 +591,11 @@ class SARSA_Agent(Base_Agent):
                 if t>=self.num_steps:
                     done = True
             
-            # Update the running reward /return!!
-            running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
+            # Update the running reward
+            if i_episode==1:
+                running_reward = ep_reward
+            else:
+                running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
             
             # Store the rewards for plotting
             ep_rewards.append(ep_reward)
@@ -610,7 +613,7 @@ class SARSA_Agent(Base_Agent):
                 print('Max episodes exceeded, quitting.')
                 break
             
-            if i_episode % 150 == 0 and running_reward < -480:
+            if i_episode % RE_INIT_EP == 0 and running_reward < RE_INIT_VAL:
                 self.q_net.apply(SARSA_Agent.init_weights)
                 
         return ep_rewards, running_rewards
@@ -702,9 +705,6 @@ class Q_DQN_Agent(Base_Agent):
         # Array to store cumulative rewards per episode
         ep_rewards = np.zeros((self.num_episodes, 1))
         
-        # To track the reward across consecutive episodes (smoothed)
-        running_reward = self.running_reward_start
-        
         # Lists to store the episodic and running rewards for plotting
         ep_rewards = list()
         running_rewards = list()
@@ -781,7 +781,10 @@ class Q_DQN_Agent(Base_Agent):
                     self.target_q_net.load_state_dict(self.q_net.state_dict())
             
             # Update the running reward
-            running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
+            if i_episode==1:
+                running_reward = ep_reward
+            else:
+                running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
             
             # Store the rewards for plotting
             ep_rewards.append(ep_reward)
@@ -798,7 +801,7 @@ class Q_DQN_Agent(Base_Agent):
                 print('Max episodes exceeded, quitting.')
                 break
             
-            if i_episode % 150 == 0 and running_reward < -480:
+            if i_episode % RE_INIT_EP == 0 and running_reward < RE_INIT_VAL:
                 self.q_net.apply(Q_DQN_Agent.init_weights)
 
         return ep_rewards, running_rewards
@@ -895,9 +898,6 @@ class SARSA_DQN_Agent(Base_Agent):
         ep_rewards = list()
         running_rewards = list()
         
-        # To track the reward across consecutive episodes (smoothed)
-        running_reward = self.running_reward_start
-        
         replay_memory = [] # replay memory holds s, a, r, s'
         step = 0
         
@@ -980,8 +980,11 @@ class SARSA_DQN_Agent(Base_Agent):
                     self.target_q_net.load_state_dict(self.q_net.state_dict())
                     
             
-            # Update the running reward /return!!
-            running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
+            # Update the running reward
+            if i_episode==1:
+                running_reward = ep_reward
+            else:
+                running_reward = 0.05 * ep_reward + (1 - 0.05) * running_reward
             
             # Store the rewards for plotting
             ep_rewards.append(ep_reward)
@@ -999,7 +1002,7 @@ class SARSA_DQN_Agent(Base_Agent):
                 print('Max episodes exceeded, quitting.')
                 break
             
-            if i_episode % 150 == 0 and running_reward < -480:
+            if i_episode % RE_INIT_EP == 0 and running_reward < RE_INIT_VAL:
                 self.q_net.apply(SARSA_DQN_Agent.init_weights)
 
         return ep_rewards, running_rewards
