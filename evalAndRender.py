@@ -14,7 +14,9 @@ import torch
 from agents import Q_Agent, Q_DQN_Agent, SARSA_Agent, SARSA_DQN_Agent
 from agents_nnp import A2C_Agent, MC_PolGrad_Agent
 from networks import QNetwork, PolicyNetwork
+import os
 
+# os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 #%% TRAINING
 training_results = list() # A list for storing the hyperparameters and the corresponding results
@@ -26,7 +28,7 @@ LR_QNET = 0.0001
 GAMMA = 0.99
 EPS = 0.3
 ACTION_SELECTION = 'eps_decay'
-HIDDEN_DIM_QNET = 128
+HIDDEN_DIM_QNET = 256
 
 # DQN
 MINI_BATCH_SIZE = 32 # for experience replay
@@ -34,21 +36,21 @@ MINI_BATCH_SIZE = 32 # for experience replay
 # C_TARGET_NET_UPDATE = 100 # steps with constant target q-network
 TARGET_NET = True
 
-# #%% EVALUATION & VIDEO (AAC)
+# #%% EVALUATION & VIDEO (A2C)
 # env_to_wrap = gym.make('Acrobot-v1')
-# env = gym.wrappers.Monitor(env_to_wrap, 'videos/AAC', force = True)
+# env = gym.wrappers.Monitor(env_to_wrap, 'videos/A2C', force = True)
 
-# aac_agent = AAC_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_POL,
+# agent = A2C_Agent(env, num_episodes=MAX_EPISODES, num_steps=500, learning_rate=LR_POL,
 #                 gamma=GAMMA, hidden_dim=HIDDEN_DIM_POL, dropout=DROPOUT, log_interval=LOG_INTERVAL)
-# aac_agent.load_pol_network(state_file='models/aac_polNet.pt')
+# agent.load_pol_network(state_file='models/aac_polNet.pt')
 
-# ep_rewards = aac_agent.polGrad_evaluation(n_episodes=10, vid_env=env)
+# ep_rewards = gent.polGrad_evaluation(n_episodes=10, vid_env=env)
 
 # env.close()
 # env_to_wrap.close()
 
 
-#%% EVALUATION & VIDEO (SARSA)
+#%% EVALUATION & VIDEO (DQN)
 env_to_wrap = gym.make('Acrobot-v1')
 env = gym.wrappers.Monitor(env_to_wrap, 'videos/DQN', force = True)
 
