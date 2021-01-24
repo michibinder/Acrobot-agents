@@ -53,25 +53,23 @@ class QNetwork(nn.Module):
         return network
     
 
-class QNetwork2(nn.Module):
+class DQN_Network(nn.Module):
     """
     A fully connected neural network with 2 hidden layers and dropout. It 
     was tried to replace the more simple and smaller QNetwork, but it was not improving 
     performance.
     """
-    def __init__(self, env, hidden_dim=100, dropout=0.4):
-        super(QNetwork2, self).__init__()
+    def __init__(self, env, hidden_dim=64):
+        super(DQN_Network, self).__init__()
         self.env = env
         self.state_space = env.observation_space.shape[0] # 6
         self.action_space = env.action_space.n # 3
         self.hidden_dim = hidden_dim
         
         # Layer definitions
-        self.affine1 = nn.Linear(self.state_space, self.hidden_dim)
-        self.dropout1 = nn.Dropout(p=dropout)        
-        self.affine2 = nn.Linear(self.hidden_dim, self.hidden_dim)
-        self.dropout2 = nn.Dropout(p=dropout)
-        self.affine3 = nn.Linear(self.hidden_dim, self.action_space)
+        self.affine1 = nn.Linear(self.state_space, self.hidden_dim, bias=False)  
+        self.affine2 = nn.Linear(self.hidden_dim, self.hidden_dim, bias=False)
+        self.affine3 = nn.Linear(self.hidden_dim, self.action_space, bias=False)
         
         
     def forward(self, x):
@@ -85,10 +83,8 @@ class QNetwork2(nn.Module):
         """        
         model = torch.nn.Sequential(
             self.affine1,
-            self.dropout1,
             nn.ReLU(),
             self.affine2,
-            self.dropout2,
             nn.ReLU(),
             self.affine3
         )

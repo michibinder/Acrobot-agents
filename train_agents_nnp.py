@@ -28,13 +28,20 @@ env.seed(random_seed)
 training_results = list() # A list for storing the hyperparameters and the corresponding results
 MAX_EPISODES = 1000
 MAX_STEPS = 500
+LOG_INTERVAL = 100
+
 DROPOUT = 0.4 # 0.5
 LR_POL = 0.001
-# LR_QNET = 0.0001
 GAMMA = 0.99
-HIDDEN_DIM = 128
-# HIDDEN_DIM_2 = 32
-LOG_INTERVAL = 100
+HIDDEN_DIM = 128 # DQN the same
+
+# DQN
+EPS = 0.3
+LR_QNET = 0.0001
+ACTION_SELECTION = 'eps_decay'
+HIDDEN_DIM_QNET = 128
+MINI_BATCH_SIZE = 32 # for experience replay
+TARGET_NET = True
 
 
 #%% Train Monte Carlo policy gradient Agent (REINFORCE - Agent) ###
@@ -121,31 +128,26 @@ rewards_sigma = agent_results.std(axis=0)
 training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
 
 
-#%% Train SARSA_DQN-Agent (semi-gradient) ###
-HIDDEN_DIM_QNET = 32
-LR_QNET = 0.0001
-EPS = 0.3
-MINI_BATCH_SIZE = 32
-
+#%% Train Q_DQN-Agent (semi-gradient) ###
 agent_results = list()
-hyperparam_dict = {'name': 'SARSA DQN (' + str(HIDDEN_DIM_QNET) + ')'}
-agent = SARSA_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=True, act_sel='softmax', batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
+hyperparam_dict = {'name': 'Q-DQN (C=100)'}
+agent = Q_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=TARGET_NET, act_sel=ACTION_SELECTION, batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 
-agent = SARSA_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=True, act_sel='softmax', batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
+agent = Q_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=TARGET_NET, act_sel=ACTION_SELECTION, batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 
-agent = SARSA_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=True, act_sel='softmax', batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
+agent = Q_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=TARGET_NET, act_sel=ACTION_SELECTION, batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 
-agent = SARSA_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=True, act_sel='softmax', batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
+agent = Q_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=TARGET_NET, act_sel=ACTION_SELECTION, batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 agent_results = np.array(agent_results)
@@ -158,7 +160,7 @@ training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
 plt.rcParams.update({'font.size': 9})
 width = 170/25.4 # 6.7in
 # FIGSIZE = (width,width*1/3)
-FIGSIZE = (width,width*4/8)
+FIGSIZE = (width,width*3/8)
 
 # Plot the results
 fig, ax = plt.subplots(figsize=FIGSIZE)
@@ -166,9 +168,11 @@ i=0
 for result in training_results:
     i += 1
     # if not i%2==0:
-    if i==4:
-        continue
     hp = result[0]
+    # if i==4:
+    #     hp = {'name':'Q-DQN (128)'}
+    #     continue
+   
     mu = result[1]
     sigma = result[2]
     plt.plot(range(len(mu)), mu, lw=1.2, label=hp['name'])

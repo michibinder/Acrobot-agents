@@ -14,16 +14,21 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 import copy
 
-from networks import QNetwork, QNetwork2, PolicyNetwork
+from networks import QNetwork, DQN_Network, PolicyNetwork
 
+# Re-Initialization constants for weights (Xavier-nornal)
 RE_INIT_VAL = -490
 RE_INIT_EP = 150
 
 LR_DECAY_RATE = 0.999
-MEM_MAX_SIZE = 10000 # memory size for experience replay
-C_TARGET_NET_UPDATE = 100 # steps with constant target q-network
+
+REWARD_THRESHOLD = -75 # low enough to not stop traning
 START_EPS_DECAY = 400 # episode
-REWARD_THRESHOLD = -50
+EPS_DECAY_RATE = 0.995
+
+# DQN
+MEM_MAX_SIZE = 10000 # memory size for experience replay
+C_TARGET_NET_UPDATE = 200 # steps with constant target q-network
 
 class Base_Agent:
     """
@@ -339,7 +344,7 @@ class Q_Agent(Base_Agent):
     A Q-Learning agent.
     """
 
-    def __init__(self, env, num_episodes, num_steps, learning_rate, gamma, epsilon=0.3, hidden_dim=100, log_interval=100):
+    def __init__(self, env, num_episodes, num_steps, learning_rate, gamma, epsilon=0.3, hidden_dim=100, act_sel='eps_decay', log_interval=100):
         """
         Constructor
         """
@@ -358,7 +363,7 @@ class Q_Agent(Base_Agent):
         self.lr_decayRate = LR_DECAY_RATE
         self.lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.optimizer, gamma=self.lr_decayRate)
         
-        self.act_sel = 'softmax'
+        self.act_sel = act_sel
        
        
     def train(self):
@@ -391,7 +396,10 @@ class Q_Agent(Base_Agent):
             
             # Set the done variable to False
             done = False
-
+            
+            if self.act_sel=='eps_decay' and i_episode>START_EPS_DECAY:
+                self.epsilon = EPS_DECAY_RATE*self.epsilon
+                
             # Variable for tracking the time
             t = 0
                     
@@ -476,7 +484,7 @@ class SARSA_Agent(Base_Agent):
     A Sarsa agent.
     """
 
-    def __init__(self, env, num_episodes, num_steps, learning_rate, gamma, epsilon=0.3, hidden_dim=100, log_interval=100):
+    def __init__(self, env, num_episodes, num_steps, learning_rate, gamma, epsilon=0.3, hidden_dim=100, act_sel='eps_decay', log_interval=100):
         """
         Constructor
         """
@@ -494,7 +502,7 @@ class SARSA_Agent(Base_Agent):
         self.lr_decayRate = LR_DECAY_RATE
         self.lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.optimizer, gamma=self.lr_decayRate)
         
-        self.act_sel = 'softmax'
+        self.act_sel = act_sel
         
         
     def train(self):
@@ -532,7 +540,10 @@ class SARSA_Agent(Base_Agent):
             
             # Use the state as input to compute the q-values (for all actions in 1 forward pass)
             q = self.q_net(torch.autograd.Variable(torch.from_numpy(state).type(torch.FloatTensor)))
-
+            
+            if self.act_sel=='eps_decay' and i_episode>START_EPS_DECAY:
+                self.epsilon = EPS_DECAY_RATE*self.epsilon
+                
             if self.act_sel == 'eps_decay':
                 action = self.eps_greedy_action(q)
             else:
@@ -634,13 +645,16 @@ class Q_DQN_Agent(Base_Agent):
         self.epsilon = epsilon
         
         # Networks
-        self.q_net = QNetwork(env=self.env, hidden_dim=hidden_dim)
-        self.target_q_net = QNetwork(env=self.env, hidden_dim=hidden_dim)
+        # self.q_net = QNetwork(env=self.env, hidden_dim=hidden_dim)
+        # self.target_q_net = QNetwork(env=self.env, hidden_dim=hidden_dim)
+        self.q_net = DQN_Network(env=self.env, hidden_dim=hidden_dim)
+        self.target_q_net = DQN_Network(env=self.env, hidden_dim=hidden_dim)
         self.q_net.apply(Base_Agent.init_weights)
         
         # Optimizer
         self.optimizer = optim.Adam(self.q_net.parameters(), lr=self.learning_rate)
         # self.optimizer = optim.SGD(self.q_network.parameters(), lr=self.learning_rate)
+        
         # Learning rate schedule
         self.lr_decayRate = LR_DECAY_RATE
         self.lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.optimizer, gamma=self.lr_decayRate)
@@ -732,7 +746,7 @@ class Q_DQN_Agent(Base_Agent):
             
             # Decrease epsilon
             if self.act_sel=='eps_decay' and i_episode>START_EPS_DECAY:
-                self.epsilon = 0.995*self.epsilon
+                self.epsilon = EPS_DECAY_RATE*self.epsilon
                 
             # For each step of the episode
             while (not done):
@@ -828,8 +842,8 @@ class SARSA_DQN_Agent(Base_Agent):
         self.optimizer = optim.Adam(self.q_net.parameters(), lr=self.learning_rate)
         
         # Learning rate schedule
-        # self.lr_decayRate = LR_DECAY_RATE
-        # self.lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.optimizer, gamma=self.lr_decayRate)
+        self.lr_decayRate = LR_DECAY_RATE
+        self.lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.optimizer, gamma=self.lr_decayRate)
         
         # Loss function
         self.criteria = nn.MSELoss()
@@ -925,7 +939,7 @@ class SARSA_DQN_Agent(Base_Agent):
             
             # Decrease epsilon
             if self.act_sel=='eps_decay' and i_episode>START_EPS_DECAY:
-                self.epsilon = 0.995*self.epsilon
+                self.epsilon = EPS_DECAY_RATE*self.epsilon
             
             if self.act_sel=='eps_decay':    
                 action = self.eps_greedy_action(q)

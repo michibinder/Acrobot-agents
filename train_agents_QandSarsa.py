@@ -28,62 +28,123 @@ env.seed(random_seed)
 training_results = list() # A list for storing the hyperparameters and the corresponding results
 MAX_EPISODES = 1000
 MAX_STEPS = 500
+LOG_INTERVAL = 100
+
 EPS = 0.3
 LR_QNET = 0.0001
 GAMMA = 0.99
+ACTION_SELECTION = 'eps_decay'
+
 HIDDEN_DIM_QNET = 32
 HIDDEN_DIM_QNET_2 = 128
-LOG_INTERVAL = 100
 
 
-#%% Train Q-Agent (semi-gradient) ###
+
+# #%% Train SARSA-Agent (semi-gradient) ###
+# agent_results = list()
+# hyperparam_dict = {'name': 'Q (eps decay, ' + str(HIDDEN_DIM_QNET) + ')'}
+# agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+#                       gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = agent.train()
+# agent_results.append(running_rewards)
+
+# agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+#                       gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = agent.train()
+# agent_results.append(running_rewards)
+
+# agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+#                       gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = agent.train()
+# agent_results.append(running_rewards)
+
+# agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+#                       gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = agent.train()
+# agent_results.append(running_rewards)
+# agent_results = np.array(agent_results)
+# rewards_mu = agent_results.mean(axis=0)
+# rewards_sigma = agent_results.std(axis=0)
+# training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
+
+
+# #%% Train SARSA-Agent (semi-gradient) ###
+# agent_results = list()
+# hyperparam_dict = {'name': 'Q (eps decay, ' + str(HIDDEN_DIM_QNET_2) + ')'}
+# agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+#                       gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = agent.train()
+# agent_results.append(running_rewards)
+
+# agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+#                       gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = agent.train()
+# agent_results.append(running_rewards)
+
+# agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+#                       gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = agent.train()
+# agent_results.append(running_rewards)
+
+# agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+#                       gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = agent.train()
+# agent_results.append(running_rewards)
+# agent_results = np.array(agent_results)
+# rewards_mu = agent_results.mean(axis=0)
+# rewards_sigma = agent_results.std(axis=0)
+# training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
+
+
+# #%% Train SARSA-Agent (semi-gradient) ###
+# ACTION_SELECTION = 'softmax'
+# agent_results = list()
+# hyperparam_dict = {'name': 'Q (softmax, ' + str(HIDDEN_DIM_QNET) + ')'}
+# agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+#                       gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = agent.train()
+# agent_results.append(running_rewards)
+
+# agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+#                       gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = agent.train()
+# agent_results.append(running_rewards)
+
+# agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+#                       gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = agent.train()
+# agent_results.append(running_rewards)
+
+# agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+#                       gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = agent.train()
+# agent_results.append(running_rewards)
+# agent_results = np.array(agent_results)
+# rewards_mu = agent_results.mean(axis=0)
+# rewards_sigma = agent_results.std(axis=0)
+# training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
+
+
+#%% Train SARSA-Agent (semi-gradient) ###
 agent_results = list()
-hyperparam_dict = {'name': 'Q (' + str(HIDDEN_DIM_QNET) + ')'}
-agent = Q_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, log_interval=LOG_INTERVAL)
+hyperparam_dict = {'name': 'SARSA (eps decay, ' + str(HIDDEN_DIM_QNET) + ')'}
+agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 
-agent = Q_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, log_interval=LOG_INTERVAL)
+agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 
-agent = Q_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, log_interval=LOG_INTERVAL)
+agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 
-agent = Q_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = agent.train()
-agent_results.append(running_rewards)
-agent_results = np.array(agent_results)
-rewards_mu = agent_results.mean(axis=0)
-rewards_sigma = agent_results.std(axis=0)
-training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
-
-
-#%% Train Q-Agent (semi-gradient) ###
-agent_results = list()
-hyperparam_dict = {'name': 'Q (' + str(HIDDEN_DIM_QNET_2) + ')'}
-agent = Q_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = agent.train()
-agent_results.append(running_rewards)
-
-agent = Q_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = agent.train()
-agent_results.append(running_rewards)
-
-agent = Q_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = agent.train()
-agent_results.append(running_rewards)
-
-agent = Q_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, log_interval=LOG_INTERVAL)
+agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 agent_results = np.array(agent_results)
@@ -93,25 +154,26 @@ training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
 
 
 #%% Train SARSA-Agent (semi-gradient) ###
+ACTION_SELECTION = 'softmax'
 agent_results = list()
-hyperparam_dict = {'name': 'SARSA (' + str(HIDDEN_DIM_QNET) + ')'}
+hyperparam_dict = {'name': 'SARSA (softmax, ' + str(HIDDEN_DIM_QNET) + ')'}
 agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, log_interval=LOG_INTERVAL)
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 
 agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, log_interval=LOG_INTERVAL)
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 
 agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, log_interval=LOG_INTERVAL)
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 
 agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, log_interval=LOG_INTERVAL)
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 agent_results = np.array(agent_results)
@@ -121,25 +183,26 @@ training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
 
 
 #%% Train SARSA-Agent (semi-gradient) ###
+ACTION_SELECTION = 'softmax'
 agent_results = list()
-hyperparam_dict = {'name': 'SARSA (' + str(HIDDEN_DIM_QNET_2) + ')'}
+hyperparam_dict = {'name': 'SARSA (softmax, ' + str(HIDDEN_DIM_QNET_2) + ')'}
 agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, log_interval=LOG_INTERVAL)
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 
 agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, log_interval=LOG_INTERVAL)
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 
 agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, log_interval=LOG_INTERVAL)
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 
 agent = SARSA_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, log_interval=LOG_INTERVAL)
+                      gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET_2, act_sel=ACTION_SELECTION, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 agent_results = np.array(agent_results)
@@ -191,11 +254,11 @@ FIGSIZE = (width,width*3/8)
 
 # Plot the results
 fig, ax = plt.subplots(figsize=FIGSIZE)
-i=1
+i=0
 for result in training_results:
-    # i += 1
-    # if not i%2==0:
-    #     continue
+    i += 1
+    if i==3 or i==4:
+        continue
     hp = result[0]
     mu = result[1]
     sigma = result[2]
