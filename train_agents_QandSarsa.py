@@ -257,8 +257,8 @@ fig, ax = plt.subplots(figsize=FIGSIZE)
 i=0
 for result in training_results:
     i += 1
-    if i==3 or i==4:
-        continue
+    # if i==3 or i==4:
+    #     continue
     hp = result[0]
     mu = result[1]
     sigma = result[2]
