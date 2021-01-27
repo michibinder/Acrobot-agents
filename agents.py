@@ -656,8 +656,8 @@ class Q_DQN_Agent(Base_Agent):
         # self.optimizer = optim.SGD(self.q_network.parameters(), lr=self.learning_rate)
         
         # Learning rate schedule
-        self.lr_decayRate = LR_DECAY_RATE
-        self.lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.optimizer, gamma=self.lr_decayRate)
+        # self.lr_decayRate = LR_DECAY_RATE
+        # self.lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.optimizer, gamma=self.lr_decayRate)
         
         # Loss function
         self.criteria = nn.MSELoss()
@@ -842,8 +842,8 @@ class SARSA_DQN_Agent(Base_Agent):
         self.optimizer = optim.Adam(self.q_net.parameters(), lr=self.learning_rate)
         
         # Learning rate schedule
-        self.lr_decayRate = LR_DECAY_RATE
-        self.lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.optimizer, gamma=self.lr_decayRate)
+        # self.lr_decayRate = LR_DECAY_RATE
+        # self.lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.optimizer, gamma=self.lr_decayRate)
         
         # Loss function
         self.criteria = nn.MSELoss()

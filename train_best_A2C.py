@@ -27,29 +27,21 @@ env.seed(random_seed)
 
 #%% TRAINING
 training_results = list() # A list for storing the hyperparameters and the corresponding results
-MAX_EPISODES = 3000
+MAX_EPISODES = 4000
 MAX_STEPS = 500
 LOG_INTERVAL = 100
 
-LR_QNET = 0.0001
+LR_POL = 0.001
 GAMMA = 0.99
-EPS = 0.3
-ACTION_SELECTION = 'eps_decay'
-# EPS_DECAY_RATE = 0.995
-HIDDEN_DIM_QNET = 256
-
-# DQN
-MINI_BATCH_SIZE = 32 # for experience replay
-# MEM_MAX_SIZE = 10000 # memory size for experience replay
-# C_TARGET_NET_UPDATE = 200 # steps with constant target q-network
-TARGET_NET = True
+DROPOUT = 0
+HIDDEN_DIM = 512
 
 
 #%% Train Q_DQN-Agent (semi-gradient) ###
 agent_results = list()
-hyperparam_dict = {'name': 'Q-DQN (C:100, NN$_{dim}$:128)'}
-agent = Q_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=TARGET_NET, act_sel=ACTION_SELECTION, batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
+hyperparam_dict = {'name': 'A2C (DROPOUT:0, NN$_{dim}$:512)'}
+agent = A2C_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
+                      gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 
 # agent_results.append(running_rewards)
@@ -77,7 +69,7 @@ for result in training_results:
     ep_reward = result[1]
     running_reward = result[2]
      
-    plt.plot(range(len(ep_reward)), ep_reward, lw=1.2, label='Q-DQN (C: 200, NN$_{dim}$: 256)')
+    plt.plot(range(len(ep_reward)), ep_reward, lw=1.2, label='A2C (DROPOUT: 0, NN$_{dim}$: 512)')
     plt.plot(range(len(running_reward)), running_reward, lw=1.2, label='EMA (stopped @ -75)')
     # ax.fill_between(range(len(mu)), mu+sigma, mu-sigma, alpha=0.5)
     
@@ -92,7 +84,7 @@ plt.ylabel('Rewards')
 plt.legend(loc='lower right', ncol=1) # ncol=1
 fig.tight_layout()
 plt.show()
-fig.savefig('images/DQN_agent.pdf')
+fig.savefig('images/A2C_agent_232.pdf')
 
 #%% Save neural network of agent
-agent.save_q_network(save_dir="models", file_name="DQN_v2.pt")
+agent.save_pol_network(save_dir="models", file_name="A2C_v2.pt")

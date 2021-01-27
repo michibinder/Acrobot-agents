@@ -47,7 +47,7 @@ MINI_BATCH_SIZE = 32 # for experience replay
 TARGET_NET = False
 agent_results = list()
 # hyperparam_dict = {'name': 'Q-DQN (' + str(HIDDEN_DIM_QNET) + ')'}
-hyperparam_dict = {'name': 'Q-DQN (C=1)'}
+hyperparam_dict = {'name': 'Q-DQN (eps decay, C: 1)'}
 agent = Q_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
                   gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=TARGET_NET, act_sel=ACTION_SELECTION, batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
@@ -76,7 +76,7 @@ training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
 #%% Train Q_DQN-Agent (semi-gradient) ###
 TARGET_NET = True
 agent_results = list()
-hyperparam_dict = {'name': 'Q-DQN (C=100)'}
+hyperparam_dict = {'name': 'Q-DQN (eps decay, C: 200)'}
 agent = Q_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
                   gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=TARGET_NET, act_sel=ACTION_SELECTION, batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
@@ -100,6 +100,36 @@ agent_results = np.array(agent_results)
 rewards_mu = agent_results.mean(axis=0)
 rewards_sigma = agent_results.std(axis=0)
 training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
+
+
+#%% Train Q_DQN-Agent (semi-gradient) ###
+TARGET_NET = True
+agent_results = list()
+hyperparam_dict = {'name': 'Q-DQN (softmax, C: 200)'}
+agent = Q_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=TARGET_NET, act_sel=ACTION_SELECTION, batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.train()
+agent_results.append(running_rewards)
+
+agent = Q_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=TARGET_NET, act_sel=ACTION_SELECTION, batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.train()
+agent_results.append(running_rewards)
+
+agent = Q_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=TARGET_NET, act_sel=ACTION_SELECTION, batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.train()
+agent_results.append(running_rewards)
+
+agent = Q_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
+                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=TARGET_NET, act_sel=ACTION_SELECTION, batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
+ep_rewards, running_rewards = agent.train()
+agent_results.append(running_rewards)
+agent_results = np.array(agent_results)
+rewards_mu = agent_results.mean(axis=0)
+rewards_sigma = agent_results.std(axis=0)
+training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
+
 
 
 # #%% Train SARSA_DQN-Agent (semi-gradient) ###

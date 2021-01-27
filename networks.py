@@ -67,9 +67,13 @@ class DQN_Network(nn.Module):
         self.hidden_dim = hidden_dim
         
         # Layer definitions
-        self.affine1 = nn.Linear(self.state_space, self.hidden_dim, bias=False)  
-        self.affine2 = nn.Linear(self.hidden_dim, self.hidden_dim, bias=False)
-        self.affine3 = nn.Linear(self.hidden_dim, self.action_space, bias=False)
+        # self.affine1 = nn.Linear(self.state_space, self.hidden_dim, bias=False)  
+        # self.affine2 = nn.Linear(self.hidden_dim, self.hidden_dim, bias=False)
+        # self.affine3 = nn.Linear(self.hidden_dim, self.action_space, bias=False)
+        
+        self.affine1 = nn.Linear(self.state_space, self.hidden_dim)  
+        self.affine2 = nn.Linear(self.hidden_dim, self.hidden_dim)
+        self.affine3 = nn.Linear(self.hidden_dim, self.action_space)
         
         
     def forward(self, x):

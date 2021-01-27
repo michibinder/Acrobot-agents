@@ -39,8 +39,8 @@ class MC_PolGrad_Agent(Base_Agent):
         self.optimizer = optim.Adam(self.policy.parameters(), lr=self.learning_rate)
         
         # Learning rate schedule
-        self.lr_decayRate = 0.999
-        self.lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.optimizer, gamma=self.lr_decayRate)
+        # self.lr_decayRate = 0.999
+        # self.lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.optimizer, gamma=self.lr_decayRate)
         
         # self.criteria = nn.MSELoss()
         # loss_function = nn.CrossEntropyLoss()
@@ -239,15 +239,15 @@ class A2C_Agent(Base_Agent):
         self.policy.apply(Base_Agent.init_weights)
         
         ### Optimizer
-        self.optimizer = optim.Adam(self.policy.parameters(), lr=self.learning_rate)
+        self.optimizer = optim.Adam(self.policy.parameters(), lr=self.learning_rate, weight_decay=0)
         # self.optimizer = optim.Adam(self.actor.parameters(), lr=self.learning_rate)
         
         # all_params = chain(self.actor.parameters(), self.critic.parameters())
         # self.optimizer = optim.Adam(all_params, lr=self.learning_rate)
         
         ### Learning rate decay
-        self.lr_decayRate = 0.999
-        self.lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.optimizer, gamma=self.lr_decayRate)
+        # self.lr_decayRate = 0.999
+        # self.lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.optimizer, gamma=self.lr_decayRate)
         
         # self.criteria = nn.MSELoss()
         self.rewards = []
@@ -473,8 +473,8 @@ class TD_A2C_Agent(Base_Agent):
         # self.optimizer = optim.Adam(all_params, lr=self.learning_rate)
         
         ### Learning rate decay
-        self.lr_decayRate = 0.999
-        self.lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.optimizer, gamma=self.lr_decayRate)
+        # self.lr_decayRate = 0.999
+        # self.lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=self.optimizer, gamma=self.lr_decayRate)
     
     
     def update_policy(self):

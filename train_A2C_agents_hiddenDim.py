@@ -17,6 +17,7 @@ from agents_nnp import MC_PolGrad_Agent, A2C_Agent, TD_A2C_Agent
 
 #%% ENVIRONMENT
 env = gym.make('Acrobot-v1')
+# env = gym.make('MountainCar-v0').env
 
 #%% SEED
 random_seed = 1234
@@ -28,52 +29,14 @@ env.seed(random_seed)
 training_results = list() # A list for storing the hyperparameters and the corresponding results
 MAX_EPISODES = 1000
 MAX_STEPS = 500
-LOG_INTERVAL = 100
-
 DROPOUT = 0 # 0.5
 LR_POL = 0.001
 GAMMA = 0.99
-HIDDEN_DIM = 128 # DQN the same
+LOG_INTERVAL = 100
 
-# DQN
-EPS = 0.3
-LR_QNET = 0.0001
-ACTION_SELECTION = 'eps_decay'
-HIDDEN_DIM_QNET = 128
-MINI_BATCH_SIZE = 32 # for experience replay
-TARGET_NET = True
-
-
-#%% Train Monte Carlo policy gradient Agent (REINFORCE - Agent) ###
+#%% Train A2C-Agent (neural network policy - agent) ###
 agent_results = list()
-hyperparam_dict = {'name': 'MC PolGrad (' + str(HIDDEN_DIM) + ')'}
-agent = MC_PolGrad_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
-                      gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = agent.train()
-agent_results.append(running_rewards)
-
-agent = MC_PolGrad_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
-                      gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = agent.train()
-agent_results.append(running_rewards)
-
-agent = MC_PolGrad_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
-                      gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = agent.train()
-agent_results.append(running_rewards)
-
-agent = MC_PolGrad_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
-                      gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
-ep_rewards, running_rewards = agent.train()
-agent_results.append(running_rewards)
-agent_results = np.array(agent_results)
-rewards_mu = agent_results.mean(axis=0)
-rewards_sigma = agent_results.std(axis=0)
-training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
-
-
-#%% Train AAC-Agent (neural network policy - agent) ###
-agent_results = list()
+HIDDEN_DIM = 32
 hyperparam_dict = {'name': 'A2C (' + str(HIDDEN_DIM) + ')'}
 agent = A2C_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
                       gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
@@ -100,25 +63,51 @@ rewards_sigma = agent_results.std(axis=0)
 training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
 
 
-#%% Train TD_A2C-Agent (one-step actor-critic) ###
+
+# #%% Train A2C_Agent (neural network policy - agent) ###
+# agent_results = list()
+# HIDDEN_DIM = 64
+# hyperparam_dict = {'name': 'A2C (' + str(HIDDEN_DIM) + ')'}
+# aac_agent = AAC_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
+#                       gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = aac_agent.train()
+# agent_results.append(running_rewards)
+
+# aac_agent = AAC_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
+#                       gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = aac_agent.train()
+# agent_results.append(running_rewards)
+
+# aac_agent = AAC_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
+#                       gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = aac_agent.train()
+# agent_results.append(running_rewards)
+# agent_results = np.array(agent_results)
+# rewards_mu = agent_results.mean(axis=0)
+# rewards_sigma = agent_results.std(axis=0)
+# training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
+
+
+#%% Train A2C-Agent (neural network policy - agent) ###
 agent_results = list()
-hyperparam_dict = {'name': 'TD(0) A2C (' + str(HIDDEN_DIM) + ')'}
-agent = TD_A2C_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
+HIDDEN_DIM = 128
+hyperparam_dict = {'name': 'A2C (' + str(HIDDEN_DIM) + ')'}
+agent = A2C_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
                       gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 
-agent = TD_A2C_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
+agent = A2C_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
                       gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 
-agent = TD_A2C_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
+agent = A2C_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
                       gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 
-agent = TD_A2C_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
+agent = A2C_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
                       gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
@@ -128,32 +117,82 @@ rewards_sigma = agent_results.std(axis=0)
 training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
 
 
-#%% Train Q_DQN-Agent (semi-gradient) ###
+# #%% Train AAC-Agent (neural network policy - agent) ###
+# agent_results = list()
+# HIDDEN_DIM = 256
+# hyperparam_dict = {'name': 'A2C (' + str(HIDDEN_DIM) + ')'}
+# aac_agent = AAC_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
+#                       gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = aac_agent.train()
+# agent_results.append(running_rewards)
+
+# aac_agent = AAC_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
+#                       gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = aac_agent.train()
+# agent_results.append(running_rewards)
+
+# aac_agent = AAC_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
+#                       gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = aac_agent.train()
+# agent_results.append(running_rewards)
+# agent_results = np.array(agent_results)
+# rewards_mu = agent_results.mean(axis=0)
+# rewards_sigma = agent_results.std(axis=0)
+# training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
+
+
+#%% Train AAC-Agent (neural network policy - agent) ###
 agent_results = list()
-hyperparam_dict = {'name': 'Q-DQN (128)'}
-agent = Q_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=TARGET_NET, act_sel=ACTION_SELECTION, batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
+HIDDEN_DIM = 512
+hyperparam_dict = {'name': 'A2C (' + str(HIDDEN_DIM) + ')'}
+agent = A2C_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
+                      gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 
-agent = Q_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=TARGET_NET, act_sel=ACTION_SELECTION, batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
+agent = A2C_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
+                      gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 
-agent = Q_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=TARGET_NET, act_sel=ACTION_SELECTION, batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
+agent = A2C_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
+                      gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 
-agent = Q_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
-                  gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=TARGET_NET, act_sel=ACTION_SELECTION, batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
+agent = A2C_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
+                      gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
 agent_results.append(running_rewards)
 agent_results = np.array(agent_results)
 rewards_mu = agent_results.mean(axis=0)
 rewards_sigma = agent_results.std(axis=0)
 training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
+
+
+# #%% Train AAC-Agent (neural network policy - agent) ###
+# agent_results = list()
+# HIDDEN_DIM = 1028
+# hyperparam_dict = {'name': 'A2C (' + str(HIDDEN_DIM) + ')'}
+# aac_agent = AAC_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
+#                       gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = aac_agent.train()
+# agent_results.append(running_rewards)
+
+# aac_agent = AAC_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
+#                       gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = aac_agent.train()
+# agent_results.append(running_rewards)
+
+# aac_agent = AAC_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_POL,
+#                       gamma=GAMMA, hidden_dim=HIDDEN_DIM, dropout=DROPOUT, log_interval=LOG_INTERVAL)
+# ep_rewards, running_rewards = aac_agent.train()
+# agent_results.append(running_rewards)
+# agent_results = np.array(agent_results)
+# rewards_mu = agent_results.mean(axis=0)
+# rewards_sigma = agent_results.std(axis=0)
+# training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
+
 
 
 #%% VISUALIZATION
@@ -164,17 +203,15 @@ FIGSIZE = (width,width*3/8)
 
 # Plot the results
 fig, ax = plt.subplots(figsize=FIGSIZE)
-i=0
+i=1
 for result in training_results:
-    i += 1
+    # i += 1
     # if not i%2==0:
-    hp = result[0]
-    # if i==4:
-    #     hp = {'name':'Q-DQN (128)'}
     #     continue
-   
+    hp = result[0]
     mu = result[1]
     sigma = result[2]
+     
     plt.plot(range(len(mu)), mu, lw=1.2, label=hp['name'])
     ax.fill_between(range(len(mu)), mu+sigma, mu-sigma, alpha=0.5)
     
@@ -188,7 +225,7 @@ plt.ylabel('Rewards$_{EMA}$')
 plt.legend(loc='lower right', ncol=1) # ncol=1
 fig.tight_layout()
 plt.show()
-fig.savefig('images/nnp_agents.pdf')
+fig.savefig('images/AAC_hidden_Dim_comp.pdf')
 
 #%% Save neural network of agent
 # aac_agent.save_pol_network(save_dir="models", file_name="aac_polNet.pt")
