@@ -40,8 +40,8 @@ class Base_Agent:
         Constructor
         """
         self.env = env
-        self.state_dim = env.observation_space.shape[0]
         self.num_actions = env.action_space.n
+        # self.num_actions = env.action_space.shape[0]
         self.reward_threshold = REWARD_THRESHOLD
         # self.reward_threshold = self.env.spec.reward_threshold
 

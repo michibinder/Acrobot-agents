@@ -126,7 +126,8 @@ class PolicyNetwork(nn.Module):
         super(PolicyNetwork, self).__init__()
         self.env = env
         self.state_space = env.observation_space.shape[0] # 6
-        self.action_space = env.action_space.n # 3
+        self.action_space = env.action_space.n # 3# 
+        # self.action_space = env.action_space.shape[0] # 3
         self.hidden_dim = hidden_dim
         
         # Layer definitions

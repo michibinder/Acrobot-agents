@@ -181,6 +181,9 @@ class MC_PolGrad_Agent(Base_Agent):
                 # Steps in episode for output required
                 t += 1
                 
+                if t>=self.num_steps:
+                    done=True
+                    
                 # 3.5 Check if the episode is finished using the `done` variable and break if yes
                 if (done):
                     break
@@ -587,6 +590,9 @@ class TD_A2C_Agent(Base_Agent):
                 # Steps in episode for output required
                 t += 1
                 
+                if t>=self.num_steps:
+                    done=True
+                    
                 # 3.5 Check if the episode is finished using the `done` variable and break if yes
                 if (self.done):
                     break

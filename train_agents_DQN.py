@@ -104,6 +104,7 @@ training_results.append((hyperparam_dict, rewards_mu, rewards_sigma))
 
 #%% Train Q_DQN-Agent (semi-gradient) ###
 TARGET_NET = True
+ACTION_SELECTION = 'softmax'
 agent_results = list()
 hyperparam_dict = {'name': 'Q-DQN (softmax, C: 200)'}
 agent = Q_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
@@ -169,11 +170,11 @@ FIGSIZE = (width,width*3/8)
 
 # Plot the results
 fig, ax = plt.subplots(figsize=FIGSIZE)
-i=1
+i=0
 for result in training_results:
-    # i += 1
-    # if not i%2==0:
-    #     continue
+    i += 1
+    if i==3:
+        continue
     hp = result[0]
     mu = result[1]
     sigma = result[2]
