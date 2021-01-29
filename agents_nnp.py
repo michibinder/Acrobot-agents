@@ -79,11 +79,6 @@ class MC_PolGrad_Agent(Base_Agent):
     def update_policy(self):
         """
         Performs the parameter updates of the policy network after an episode is completed.
-        
-        Args:
-            policy (NeuralNetworkPolicy): The policy neural network.
-            optimizer (child of torch.optim.Optimizer): Optimizer algorithm for gradient ascent.
-            gamma (float): Discount factor in the range [0.0,1.0].
         """
         
         policy_loss = []
@@ -130,11 +125,6 @@ class MC_PolGrad_Agent(Base_Agent):
         Implementation of the main body of the REINFORCE algorithm.
         
         Args:
-            policy (NeuralNetworkPolicy): The policy neural network.
-            optimizer (child of torch.optim.Optimizer): Optimizer algorithm for gradient ascent.
-            gamma (float): Discount factor in the range [0.0,1.0]. Defaults to 0.9.
-            log_interval (int): Prints the progress after this many episodes. Defaults to 100.
-            max_episodes (int): Maximum number of episodes to train for. Defaults to 1000.
             save (bool): Whether to save the trained network. Defaults to False.
             
         Returns:
@@ -225,7 +215,7 @@ class MC_PolGrad_Agent(Base_Agent):
     
 class A2C_Agent(Base_Agent):
     """
-    A Q actor-critic policy (NN) policy agent.
+    A Monte-Carlo advantage actor-critic policy agent.
     """
 
     def __init__(self, env, num_episodes, num_steps, learning_rate, gamma, hidden_dim=100, dropout=0.6, log_interval=100):
@@ -288,11 +278,6 @@ class A2C_Agent(Base_Agent):
     def update_policy(self):
         """
         Performs the parameter updates of the policy network after an episode is completed.
-        
-        Args:
-            policy (NeuralNetworkPolicy): The policy neural network.
-            optimizer (child of torch.optim.Optimizer): Optimizer algorithm for gradient ascent.
-            gamma (float): Discount factor in the range [0.0,1.0].
         """
         
         policy_loss = []
@@ -348,14 +333,9 @@ class A2C_Agent(Base_Agent):
     
     def train(self, save=False):
         """
-        Implementation of the main body of the REINFORCE algorithm.
+        Implementation of the main for training the A2C agent.
         
         Args:
-            policy (NeuralNetworkPolicy): The policy neural network.
-            optimizer (child of torch.optim.Optimizer): Optimizer algorithm for gradient ascent.
-            gamma (float): Discount factor in the range [0.0,1.0]. Defaults to 0.9.
-            log_interval (int): Prints the progress after this many episodes. Defaults to 100.
-            max_episodes (int): Maximum number of episodes to train for. Defaults to 1000.
             save (bool): Whether to save the trained network. Defaults to False.
             
         Returns:
@@ -451,7 +431,7 @@ class A2C_Agent(Base_Agent):
     
 class TD_A2C_Agent(Base_Agent):
     """
-    A Q actor-critic policy (NN) policy agent.
+    A TD(0) advantage actor-critic policy agent (TD(0)-A2C)
     """
 
     def __init__(self, env, num_episodes, num_steps, learning_rate, gamma, hidden_dim=100, dropout=0.6, log_interval=100):
@@ -484,10 +464,6 @@ class TD_A2C_Agent(Base_Agent):
         """
         Performs the parameter updates of the policy network after an episode is completed.
         
-        Args:
-            policy (NeuralNetworkPolicy): The policy neural network.
-            optimizer (child of torch.optim.Optimizer): Optimizer algorithm for gradient ascent.
-            gamma (float): Discount factor in the range [0.0,1.0].
         """
         
         sprime = torch.from_numpy(self.sprime).float().unsqueeze(0)
@@ -529,14 +505,10 @@ class TD_A2C_Agent(Base_Agent):
     
     def train(self, save=False):
         """
-        Implementation of the main body of the REINFORCE algorithm.
+        Implementation of the main body of the TD(0)-A2C algorithm. Update
+        happens every step!
         
         Args:
-            policy (NeuralNetworkPolicy): The policy neural network.
-            optimizer (child of torch.optim.Optimizer): Optimizer algorithm for gradient ascent.
-            gamma (float): Discount factor in the range [0.0,1.0]. Defaults to 0.9.
-            log_interval (int): Prints the progress after this many episodes. Defaults to 100.
-            max_episodes (int): Maximum number of episodes to train for. Defaults to 1000.
             save (bool): Whether to save the trained network. Defaults to False.
             
         Returns:

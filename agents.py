@@ -77,7 +77,8 @@ class Base_Agent:
     
     def softmax_action(self, q):
         """
-        Select an action based on softmax policy
+        Select an action based on softmax policy 
+        (Boltzmwnn distribution with temperature=1)
         """
         # _, amax = torch.max(q, -1)
         
@@ -258,7 +259,7 @@ class Base_Agent:
     
     def random_policy(self):
         """
-        Evaluates the agent (its trained policy)
+        Evaluates the base agent with a random policy
         """
         
         # Array to store cumulative rewards per episode
@@ -672,6 +673,19 @@ class Q_DQN_Agent(Base_Agent):
         
         
     def replay(self, replay_memory):
+        """
+        Replay function samples a mini-batch out of collected state-action pairs
+        in the replay_memory dictionary. The replay_memory also saves the reward
+        and the next state to complete the needed dataset for learning multiple
+        times from the same experience. For all memories in the mini-batch
+        targets are calculated based on the current target network and the Q-learning
+        algorithm resulting in a mean loss over all memories of the batch.
+        
+        Args:
+            replay_memory: dictionary holding the lists for relevant values
+        returns: 
+            loss: loss function to update the NN
+        """
         # choose <s,a,r,s',done> experiences randomly from the memory
         minibatch = np.random.choice(replay_memory, self.minibatch_size, replace=True)
         
@@ -858,6 +872,19 @@ class SARSA_DQN_Agent(Base_Agent):
         
         
     def replay(self, replay_memory):
+        """
+        Replay function samples a mini-batch out of collected state-action pairs
+        in the replay_memory dictionary. The replay_memory also saves the reward,
+        next state and next action to complete the needed dataset for learning multiple
+        times from the same experience. For all memories in the mini-batch
+        targets are calculated based on the current target network and the SARSA
+        algorithm resulting in a mean loss over all memories of the batch.
+        
+        Args:
+            replay_memory: dictionary holding the lists for relevant values
+        returns: 
+            loss: loss function to update the NN
+        """
         # choose <s,a,r,s',done> experiences randomly from the memory
         minibatch = np.random.choice(replay_memory, self.minibatch_size, replace=True)
         

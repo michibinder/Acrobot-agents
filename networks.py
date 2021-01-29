@@ -14,7 +14,7 @@ import torch.nn.functional as F
 
 class QNetwork(nn.Module):
     """
-    A fully connected neural network with 1 hidden layer.
+    A fully connected neural network with 1 hidden layer and no biases.
     """
     def __init__(self, env, hidden_dim=100):
         super(QNetwork, self).__init__()
@@ -55,9 +55,8 @@ class QNetwork(nn.Module):
 
 class DQN_Network(nn.Module):
     """
-    A fully connected neural network with 2 hidden layers and dropout. It 
-    was tried to replace the more simple and smaller QNetwork, but it was not improving 
-    performance.
+    A fully connected neural network with 2 hidden layers for the DQN agent
+    !!no Dropout!!
     """
     def __init__(self, env, hidden_dim=64):
         super(DQN_Network, self).__init__()
@@ -66,7 +65,7 @@ class DQN_Network(nn.Module):
         self.action_space = env.action_space.n # 3
         self.hidden_dim = hidden_dim
         
-        # Layer definitions
+        # Layer definitions (without bias)
         # self.affine1 = nn.Linear(self.state_space, self.hidden_dim, bias=False)  
         # self.affine2 = nn.Linear(self.hidden_dim, self.hidden_dim, bias=False)
         # self.affine3 = nn.Linear(self.hidden_dim, self.action_space, bias=False)
