@@ -10,8 +10,8 @@ Results have been summarised in the PDF and Figures and Videos to visualise the 
 
 Additionally, it is shown that the developed Q-learning DQN agent was also capable of solving the harder MountainCar-v0 environment of the OpenAI Gym library.
 
-<p float="center">
-  <img src="./images/nnp_agents_v6.png" width="75%" />
-  <img float="right" src="./images/acrobot_env.png" width="24%" /> 
+<p float="left">
+  <img src="./images/nnp_agents_v6.png" width="74%" />
+  <img src="./images/acrobot_env.png" width="24%" /> 
 </p>
 
