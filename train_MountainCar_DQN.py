@@ -39,7 +39,7 @@ LR_QNET = 0.0001
 GAMMA = 0.99
 EPS = 0.3
 ACTION_SELECTION = 'eps_decay'
-HIDDEN_DIM_QNET = 128
+HIDDEN_DIM_QNET = 512
 TARGET_NET = True
 
 # DQN
@@ -62,7 +62,7 @@ MINI_BATCH_SIZE = 32 # for experience replay
 
 #%% Train Q_DQN-Agent (semi-gradient) ###
 agent_results = list()
-hyperparam_dict = {'name': 'Q-DQN (C: 200, NN$_{dim}$: 256)'}
+hyperparam_dict = {'name': 'Q-DQN (C: 200, NN$_{dim}$: 512)'}
 agent = Q_DQN_Agent(env, num_episodes=MAX_EPISODES, num_steps=MAX_STEPS, learning_rate=LR_QNET,
                   gamma=GAMMA, epsilon=EPS, hidden_dim=HIDDEN_DIM_QNET, const_target=TARGET_NET, act_sel=ACTION_SELECTION, batch_size=MINI_BATCH_SIZE, log_interval=LOG_INTERVAL)
 ep_rewards, running_rewards = agent.train()
@@ -72,7 +72,7 @@ training_results.append((hyperparam_dict, ep_rewards, running_rewards))
 plt.rcParams.update({'font.size': 9})
 width = 170/25.4 # 6.7in
 # FIGSIZE = (width,width*1/3)
-FIGSIZE = (width,width*3/8)
+FIGSIZE = (width,width*3.5/8)
 
 # Plot the results
 fig, ax = plt.subplots(figsize=FIGSIZE)
@@ -85,13 +85,13 @@ for result in training_results:
     ep_reward = result[1]
     running_reward = result[2]
      
-    plt.plot(range(len(ep_reward)), ep_reward, lw=1.2, label='Q-DQN (C: 200, NN$_{dim}$: 128)')
+    plt.plot(range(len(ep_reward)), ep_reward, lw=1.2, label='Q-DQN (C: 200, NN$_{dim}$: 512)')
     plt.plot(range(len(running_reward)), running_reward, lw=1.2, label='EMA')
     # ax.fill_between(range(len(mu)), mu+sigma, mu-sigma, alpha=0.5)
     
     # plt.plot(range(len(ep_rewards)), ep_rewards, lw=2, color="red", label=hp['name'])
-    # title_str = "Acrobot-v1 ($hiddenDim_{qnet}$: " + str(HIDDEN_DIM_QNET) + ", $hiddenDim_{pol}$: " + str(HIDDEN_DIM_POL) + ")"
-    # plt.title(title_str)
+    title_str = "MountainCar-v0"
+    plt.title(title_str)
 
 
 plt.grid()

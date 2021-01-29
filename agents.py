@@ -23,8 +23,8 @@ RE_INIT_EP = 150
 LR_DECAY_RATE = 0.999
 
 REWARD_THRESHOLD = -75 # low enough to not stop traning
-START_EPS_DECAY = 400 # episode
-EPS_DECAY_RATE = 0.995
+START_EPS_DECAY = 700 # episode
+EPS_DECAY_RATE = 0.9995 # 0.995
 
 # DQN
 MEM_MAX_SIZE = 10000 # memory size for experience replay
