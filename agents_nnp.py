@@ -18,7 +18,7 @@ from itertools import chain
 from networks import PolicyNetwork, CriticNetwork, ActorCriticNetworks
 from agents import Base_Agent
 
-RE_INIT_VAL = -480
+RE_INIT_VAL = -490
 RE_INIT_EP = 150
 
 class MC_PolGrad_Agent(Base_Agent):

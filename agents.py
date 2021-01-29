@@ -22,13 +22,13 @@ RE_INIT_EP = 150
 
 LR_DECAY_RATE = 0.999
 
-REWARD_THRESHOLD = -75 # low enough to not stop traning
-START_EPS_DECAY = 700 # episode
-EPS_DECAY_RATE = 0.9995 # 0.995
+REWARD_THRESHOLD = -70  # low enough to not stop traning
+START_EPS_DECAY = 400   # episode for MountainCar but this shouldn't be too important
+EPS_DECAY_RATE = 0.995  # 0.9995 for MountainCar
 
 # DQN
-MEM_MAX_SIZE = 10000 # memory size for experience replay
-C_TARGET_NET_UPDATE = 200 # steps with constant target q-network
+MEM_MAX_SIZE = 10000        # memory size for experience replay
+C_TARGET_NET_UPDATE = 200   # steps with constant target q-network
 
 class Base_Agent:
     """
