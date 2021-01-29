@@ -1,5 +1,3 @@
-![title](images/acrobot_env.png)
-
 ## Acrobot-agents
 
 Development of multiple agents learning the Acrobot-v1 environment of the OpenAI Gym library.
@@ -12,5 +10,8 @@ Results have been summarised in the PDF and Figures and Videos to visualise the 
 
 Additionally, it is shown that the developed Q-learning DQN agent was also capable of solving the harder MountainCar-v0 environment of the OpenAI Gym library.
 
-![test where appears](images/nnp_agents_v6.png)
+<p float="center">
+  <img src="./images/nnp_agents_v6.png" />
+  <img float="right" src="./images/acrobot_env.png" width="25%" /> 
+</p>
 
