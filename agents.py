@@ -32,7 +32,11 @@ C_TARGET_NET_UPDATE = 200   # steps with constant target q-network
 
 class Base_Agent:
     """
-    A basic agent with functions for evaluation and 
+    A basic agent with functions for 
+    ... random, eps-greedy and softmax actions
+    ... evaluation
+    ... save and load networks
+    ... xavier-normal weight initialization
     """
 
     def __init__(self, env, num_episodes, num_steps, learning_rate, gamma, log_interval=100):
